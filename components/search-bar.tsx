@@ -8,6 +8,7 @@ import { searchGame } from "@/app/actions"
 import { Field, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 const formSchema = z.object({
   name: z
@@ -21,6 +22,8 @@ type SearchBarProps = {
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [error, setError] = useState("")
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: "" },
@@ -28,27 +31,34 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     const result = await searchGame(data)
-    onSearch(result.results)
+    if (result) {
+      onSearch(result.results)
+    } else {
+      setError("Error during search")
+    }
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-row">
-      <Controller
-        name="name"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <Input
-              {...field}
-              aria-invalid={fieldState.invalid}
-              placeholder="Search..."
-              autoComplete="off"
-            />
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        )}
-      />
-      <Button type="submit">Search</Button>
-    </form>
+    <>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-row">
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <Input
+                {...field}
+                aria-invalid={fieldState.invalid}
+                placeholder="Search..."
+                autoComplete="off"
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Button type="submit">Search</Button>
+      </form>
+      <div className="text-red-500">{error}</div>
+    </>
   )
 }

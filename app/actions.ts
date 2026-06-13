@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma"
 export async function createGame(game: Game) {
   await prisma.game.create({
     data: {
+      rawgId: game.id,
       name: game.name,
       playtime: game.playtime,
       released: game.released ? new Date(game.released) : null,
@@ -16,7 +17,7 @@ export async function createGame(game: Game) {
 }
 
 export async function readGame(id: number) {
-  const result = await prisma.game.findUnique({ where: { id: id } })
+  const result = await prisma.game.findUnique({ where: { rawgId: id } })
 
   return result
 }
@@ -39,9 +40,7 @@ export async function searchGame(data: { name: string }) {
       throw new Error(`Response status: ${response.status}`)
     }
 
-    const result = await response.json()
-
-    return result
+    return await response.json()
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message)

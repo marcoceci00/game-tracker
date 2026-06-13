@@ -29,6 +29,7 @@ enum Status {
 
 model Game {
   id               Int       @id @default(autoincrement())
+  rawgId           Int       @unique
   name             String
   playtime         Int?
   released         DateTime?
