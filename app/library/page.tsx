@@ -6,7 +6,7 @@ export default async function Library() {
 
   return (
     <div className="mx-auto w-3/4 pt-8">
-      <div className="mt-4 grid grid-cols-4 gap-4">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {res.map((game) => (
           <LibraryCard {...game} key={game.id} />
         ))}
