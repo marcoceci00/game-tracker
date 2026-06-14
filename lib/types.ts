@@ -1,8 +1,8 @@
-export type Game = {
+export type IgdbGame = {
   id: number
   name: string
-  playtime: number | null
-  released: string | null
-  background_image: string | null
-  metacritic: number | null
+  cover: { image_id: string }
+  aggregated_rating: number
+  first_release_date: number
+  genres: [{ name: string }]
 }

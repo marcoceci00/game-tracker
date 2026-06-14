@@ -1,25 +1,25 @@
 "use server"
 
-import { Game } from "@/lib/types"
+import { IgdbGame } from "@/lib/types"
 import prisma from "@/lib/prisma"
+import { Status } from "@/lib/generated/prisma/enums"
+import { revalidatePath } from "next/cache"
 
-export async function createGame(game: Game) {
+export async function createGame(game: IgdbGame) {
   await prisma.game.create({
     data: {
-      rawgId: game.id,
+      id: game.id,
       name: game.name,
-      playtime: game.playtime,
-      released: game.released ? new Date(game.released) : null,
-      backgroundImage: game.background_image,
-      metacriticScore: game.metacritic,
+      cover: game.cover.image_id || null,
+      genres: game.genres.map((genre) => genre.name),
+      rating: Math.round(game.aggregated_rating) || null,
+      release_date: new Date(game.first_release_date * 1000) || null,
     },
   })
 }
 
 export async function readGame(id: number) {
-  const result = await prisma.game.findUnique({ where: { rawgId: id } })
-
-  return result
+  return await prisma.game.findUnique({ where: { id: id } })
 }
 
 export async function updateGame() {}
@@ -27,23 +27,47 @@ export async function updateGame() {}
 export async function deleteGame() {}
 
 export async function searchGame(data: { name: string }) {
-  try {
-    const response = await fetch(
-      `https://api.rawg.io/api/games` +
-        `?key=${process.env.RAWG_API_KEY}` +
-        `&page_size=16` +
-        `&search_exact=true` +
-        `&ordering=-added` +
-        `&search=${encodeURIComponent(data.name)}`
-    )
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message)
-    }
+  if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_TOKEN) {
+    throw new Error("Missing IGDB credentials")
   }
+
+  const response = await fetch(`https://api.igdb.com/v4/games`, {
+    method: "POST",
+    headers: {
+      "Client-ID": process.env.IGDB_CLIENT_ID,
+      Authorization: `Bearer ${process.env.IGDB_TOKEN}`,
+    },
+    body: `
+        search "${data.name}";
+        fields name,cover.image_id,genres.name,aggregated_rating,first_release_date,total_rating;
+        where total_rating != null;
+        limit 500;
+      `,
+  })
+
+  const result = await response.json()
+  const sortedResult = result.sort(
+    (a: IgdbGame, b: IgdbGame) => b.first_release_date - a.first_release_date
+  )
+  return sortedResult
+}
+
+export async function addGameIfNotExists(game: IgdbGame) {
+  const exists = await readGame(game.id)
+
+  if (!exists) {
+    await createGame(game)
+  }
+}
+
+export async function updateStatus(id: number, status: string) {
+  await prisma.game.update({
+    where: {
+      id: id,
+    },
+    data: {
+      status: status as Status,
+    },
+  })
+  revalidatePath("/library")
 }

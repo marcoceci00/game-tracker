@@ -1,14 +1,15 @@
 "use client"
 
 import * as z from "zod"
-import { Game } from "@/lib/types"
+import { IgdbGame } from "@/lib/types"
+import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { searchGame } from "@/app/actions"
 import { Field, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { LoaderCircle } from "lucide-react"
 
 const formSchema = z.object({
   name: z
@@ -18,10 +19,11 @@ const formSchema = z.object({
 })
 
 type SearchBarProps = {
-  onSearch: (games: Game[]) => void
+  onSearch: (games: IgdbGame[]) => void
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -30,12 +32,15 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   })
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
+    setLoading(true)
+    setError("")
     const result = await searchGame(data)
     if (result) {
-      onSearch(result.results)
+      onSearch(result)
     } else {
       setError("Error during search")
     }
+    setLoading(false)
   }
 
   return (
@@ -51,12 +56,22 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 aria-invalid={fieldState.invalid}
                 placeholder="Search..."
                 autoComplete="off"
+                disabled={loading}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
-        <Button type="submit">Search</Button>
+        <Button type="submit" disabled={loading}>
+          {!loading ? (
+            "Search"
+          ) : (
+            <>
+              <LoaderCircle className="animate-spin" />
+              Loading
+            </>
+          )}
+        </Button>
       </form>
       <div className="text-red-500">{error}</div>
     </>

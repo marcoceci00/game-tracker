@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Game } from "@/lib/types"
+import { IgdbGame } from "@/lib/types"
 import SearchBar from "./search-bar"
 import ResultsGrid from "./results-grid"
 
 export default function SearchContainer() {
-  const [result, setResult] = useState<Game[]>([])
+  const [result, setResult] = useState<IgdbGame[]>([])
 
   return (
     <>
