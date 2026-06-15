@@ -1,6 +1,7 @@
 "use client"
 
 import type { GameModel } from "@/lib/generated/prisma/models/Game"
+import { toast } from "sonner"
 import {
   Card,
   CardHeader,
@@ -18,20 +19,38 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select"
-import { updateStatus } from "@/app/actions"
+import { updateStatus, deleteGame } from "@/app/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 const statusColor: Record<string, string> = {
-  WISHLIST: "bg-purple-500",
-  BACKLOG: "bg-slate-500",
-  PLAYING: "bg-yellow-500",
-  SHELVED: "bg-orange-500",
-  COMPLETED: "bg-green-500",
-  DROPPED: "bg-red-500",
+  WISHLIST: "!bg-purple-500",
+  BACKLOG: "!bg-slate-500",
+  PLAYING: "!bg-yellow-500",
+  SHELVED: "!bg-orange-500",
+  COMPLETED: "!bg-green-500",
+  DROPPED: "!bg-red-500",
 }
 
 export default function LibraryCard(game: GameModel) {
+  async function handleValueChange(id: number, status: string) {
+    try {
+      await updateStatus(id, status)
+      toast.success("Status has been changed")
+    } catch {
+      toast.error("Something went wrong")
+    }
+  }
+
+  async function handleDelete(id: number) {
+    try {
+      await deleteGame(id)
+      toast.success("Game has been deleted")
+    } catch {
+      toast.error("Something went wrong")
+    }
+  }
+
   return (
     <Card>
       <Image
@@ -49,9 +68,9 @@ export default function LibraryCard(game: GameModel) {
         <CardAction>
           <Select
             defaultValue={game.status}
-            onValueChange={(status) => updateStatus(game.id, status)}
+            onValueChange={(status) => handleValueChange(game.id, status)}
           >
-            <SelectTrigger className={`!${statusColor[game.status]}`}>
+            <SelectTrigger className={`${statusColor[game.status]}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -88,7 +107,9 @@ export default function LibraryCard(game: GameModel) {
         <Badge>{game.userRating ? game.userRating.toString() : "N.A."}</Badge>
       </CardContent>
       <CardFooter>
-        <Button variant="destructive">Delete</Button>
+        <Button variant="destructive" onClick={() => handleDelete(game.id)}>
+          Delete
+        </Button>
       </CardFooter>
     </Card>
   )

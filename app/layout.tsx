@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { Gamepad2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { Toaster } from "@/components/ui/sonner"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -45,7 +46,10 @@ export default function RootLayout({
           </div>
           <div />
         </header>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   )

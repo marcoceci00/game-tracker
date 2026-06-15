@@ -24,7 +24,10 @@ export async function readGame(id: number) {
 
 export async function updateGame() {}
 
-export async function deleteGame() {}
+export async function deleteGame(id: number) {
+  await prisma.game.delete({ where: { id: id } })
+  revalidatePath("/library")
+}
 
 export async function searchGame(data: { name: string }) {
   if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_TOKEN) {
