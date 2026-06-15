@@ -38,7 +38,10 @@ export default function RootLayout({
           </div>
           <div className="flex justify-center">
             <Button variant="link" asChild>
-              <Link href="/">Homepage</Link>
+              <Link href="/">Home</Link>
+            </Button>
+            <Button variant="link" asChild>
+              <Link href="/search">Search</Link>
             </Button>
             <Button variant="link" asChild>
               <Link href="/library">Library</Link>
