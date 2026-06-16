@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 const statusColor: Record<string, string> = {
   WISHLIST: "!bg-purple-500",
@@ -86,12 +87,14 @@ export default function LibraryCard(game: LibraryGame) {
             ? `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover}.jpg`
             : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
         }
-        width={1920}
-        height={1080}
+        width={1080}
+        height={1920}
         alt={`${game.name} image`}
       />
       <CardHeader>
-        <CardTitle>{`${game.name} (${game.release_date ? new Date(game.release_date).toLocaleDateString("en-EN", { year: "numeric" }) : "N.A."})`}</CardTitle>
+        <Link href={`/${game.id}`}>
+          <CardTitle>{`${game.name} (${game.release_date ? new Date(game.release_date).toLocaleDateString("en-EN", { year: "numeric" }) : "N.A."})`}</CardTitle>
+        </Link>
         <CardAction>
           <Select
             defaultValue={game.status}
