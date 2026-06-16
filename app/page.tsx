@@ -13,12 +13,16 @@ const STAT_CARDS: { label: string; key: Status }[] = [
 ]
 
 export default async function Page() {
-  const [playingGames, statusGroups] = await Promise.all([
+  const [playingGamesRaw, statusGroups] = await Promise.all([
     prisma.game.findMany({
       where: { status: Status.PLAYING },
     }),
     prisma.game.groupBy({ by: ["status"], _count: true }),
   ])
+  const playingGames = playingGamesRaw.map((game) => ({
+    ...game,
+    userRating: game.userRating ? Number(game.userRating) : null,
+  }))
   const countByStatus = Object.fromEntries(
     statusGroups.map((item) => [item.status, item._count])
   )

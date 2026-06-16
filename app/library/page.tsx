@@ -3,11 +3,15 @@ import prisma from "@/lib/prisma"
 
 export default async function Library() {
   const res = await prisma.game.findMany({ orderBy: { createdAt: "desc" } })
+  const games = res.map((game) => ({
+    ...game,
+    userRating: game.userRating ? Number(game.userRating) : null,
+  }))
 
   return (
     <div className="mx-auto w-3/4 pt-8">
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {res.map((game) => (
+        {games.map((game) => (
           <LibraryCard {...game} key={game.id} />
         ))}
       </div>

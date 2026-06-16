@@ -2,7 +2,7 @@
 
 import { IgdbGame } from "@/lib/types"
 import prisma from "@/lib/prisma"
-import { Status } from "@/lib/generated/prisma/enums"
+import { Status, Platform } from "@/lib/generated/prisma/enums"
 import { revalidatePath } from "next/cache"
 
 export async function createGame(game: IgdbGame) {
@@ -70,6 +70,30 @@ export async function updateStatus(id: number, status: string) {
     },
     data: {
       status: status as Status,
+    },
+  })
+  revalidatePath("/library")
+}
+
+export async function updatePlatform(id: number, platform: string) {
+  await prisma.game.update({
+    where: {
+      id: id,
+    },
+    data: {
+      platform: platform as Platform,
+    },
+  })
+  revalidatePath("/library")
+}
+
+export async function updateRating(id: number, userRating: number) {
+  await prisma.game.update({
+    where: {
+      id: id,
+    },
+    data: {
+      userRating: userRating,
     },
   })
   revalidatePath("/library")

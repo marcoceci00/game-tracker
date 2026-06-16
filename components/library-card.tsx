@@ -1,6 +1,7 @@
 "use client"
 
-import type { GameModel } from "@/lib/generated/prisma/models/Game"
+import type { LibraryGame } from "@/lib/types"
+import { useState } from "react"
 import { toast } from "sonner"
 import {
   Card,
@@ -19,8 +20,14 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select"
-import { updateStatus, deleteGame } from "@/app/actions"
+import {
+  updateStatus,
+  updatePlatform,
+  updateRating,
+  deleteGame,
+} from "@/app/actions"
 import { Badge } from "@/components/ui/badge"
+import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 
 const statusColor: Record<string, string> = {
@@ -32,11 +39,31 @@ const statusColor: Record<string, string> = {
   DROPPED: "!bg-red-500",
 }
 
-export default function LibraryCard(game: GameModel) {
-  async function handleValueChange(id: number, status: string) {
+export default function LibraryCard(game: LibraryGame) {
+  const [ratingValue, setRatingValue] = useState([Number(game.userRating)])
+
+  async function handleStatusChange(id: number, status: string) {
     try {
       await updateStatus(id, status)
       toast.success("Status has been changed")
+    } catch {
+      toast.error("Something went wrong")
+    }
+  }
+
+  async function handlePlatformChange(id: number, platform: string) {
+    try {
+      await updatePlatform(id, platform)
+      toast.success("Platform has been changed")
+    } catch {
+      toast.error("Something went wrong")
+    }
+  }
+
+  async function handleRatingChange(id: number, rating: number) {
+    try {
+      await updateRating(id, rating)
+      toast.success("Rating has been changed")
     } catch {
       toast.error("Something went wrong")
     }
@@ -68,7 +95,7 @@ export default function LibraryCard(game: GameModel) {
         <CardAction>
           <Select
             defaultValue={game.status}
-            onValueChange={(status) => handleValueChange(game.id, status)}
+            onValueChange={(status) => handleStatusChange(game.id, status)}
           >
             <SelectTrigger className={`${statusColor[game.status]}`}>
               <SelectValue />
@@ -98,13 +125,37 @@ export default function LibraryCard(game: GameModel) {
             </div>
           )}
         </div>
-        <Badge variant="outline">{game.platform}</Badge>
+        <Select
+          defaultValue={game.platform}
+          onValueChange={(platform) => handlePlatformChange(game.id, platform)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="PC">PC</SelectItem>
+              <SelectItem value="PLAYSTATION_5">Playstation 5</SelectItem>
+              <SelectItem value="NINTENDO_SWITCH_2">
+                Nintendo Switch 2
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
         <Badge
           className={`${!game.rating ? "bg-accent" : Math.round(game.rating) < 60 ? "bg-red-500" : Math.round(game.rating) < 90 ? "bg-blue-500" : "bg-green-500"} mt-auto p-4`}
         >
           {!game.rating ? "N.A." : Math.round(game.rating)}
         </Badge>
-        <Badge>{game.userRating ? game.userRating.toString() : "N.A."}</Badge>
+        <span>{ratingValue.join()}</span>
+        <Slider
+          value={ratingValue}
+          onValueChange={setRatingValue}
+          onValueCommit={(rating) => handleRatingChange(game.id, rating[0])}
+          min={1}
+          max={10}
+          step={0.5}
+        />
       </CardContent>
       <CardFooter>
         <Button variant="destructive" onClick={() => handleDelete(game.id)}>
