@@ -55,3 +55,11 @@ export default async function GameDetails({
     </div>
   )
 }
+
+// Ok, andiamo con un set in stile pagina-gioco IGDB: trama (summary), screenshot (screenshots.image_id), piattaforme di uscita (platforms.name) e sviluppatore/publisher (involved_companies.company.name).
+
+// Passo concettuale: in app/actions.ts crea una nuova server action (es. getGameDetails) separata da searchGame — stessa autenticazione IGDB (Client-ID + Bearer token), stesso endpoint /games, ma il body della richiesta cambia: invece di search "...", usi where id = ID; per puntare esattamente al gioco che ti interessa, e nei fields elenchi quelli nuovi insieme a quelli che già usavi.
+
+// Questa action va chiamata da app/[id]/page.tsx in parallelo a readGame(id) (sono due fonti diverse: Postgres per i dati personali, IGDB per i dati extra di "negozio").
+
+// Provaci a scrivere la action in actions.ts prima, poi vediamo insieme.
