@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { readGame } from "../actions"
+import { readGame, getGameDetails } from "@/app/actions"
 import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 
@@ -9,10 +9,14 @@ export default async function GameDetails({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const game = await readGame(Number(id))
+  const [game, gameDetails] = await Promise.all([
+    readGame(Number(id)),
+    getGameDetails(Number(id)),
+  ])
   if (!game) {
     notFound()
   }
+  console.log(JSON.stringify(gameDetails, null, 2))
 
   return (
     <div className="mx-auto w-3/4 pt-8">
@@ -55,11 +59,3 @@ export default async function GameDetails({
     </div>
   )
 }
-
-// Ok, andiamo con un set in stile pagina-gioco IGDB: trama (summary), screenshot (screenshots.image_id), piattaforme di uscita (platforms.name) e sviluppatore/publisher (involved_companies.company.name).
-
-// Passo concettuale: in app/actions.ts crea una nuova server action (es. getGameDetails) separata da searchGame — stessa autenticazione IGDB (Client-ID + Bearer token), stesso endpoint /games, ma il body della richiesta cambia: invece di search "...", usi where id = ID; per puntare esattamente al gioco che ti interessa, e nei fields elenchi quelli nuovi insieme a quelli che già usavi.
-
-// Questa action va chiamata da app/[id]/page.tsx in parallelo a readGame(id) (sono due fonti diverse: Postgres per i dati personali, IGDB per i dati extra di "negozio").
-
-// Provaci a scrivere la action in actions.ts prima, poi vediamo insieme.

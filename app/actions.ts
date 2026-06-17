@@ -22,6 +22,26 @@ export async function readGame(id: number) {
   return await prisma.game.findUnique({ where: { id: id } })
 }
 
+export async function getGameDetails(id: number) {
+  if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_TOKEN) {
+    throw new Error("Missing IGDB credentials")
+  }
+
+  const response = await fetch(`https://api.igdb.com/v4/games`, {
+    method: "POST",
+    headers: {
+      "Client-ID": process.env.IGDB_CLIENT_ID,
+      Authorization: `Bearer ${process.env.IGDB_TOKEN}`,
+    },
+    body: `
+        fields name,cover.image_id,genres.name,aggregated_rating,first_release_date,total_rating,summary,screenshots.image_id,platforms.name,involved_companies.company.name;
+        where id=${id};
+      `,
+  })
+
+  return await response.json()
+}
+
 export async function updateGame() {}
 
 export async function deleteGame(id: number) {
