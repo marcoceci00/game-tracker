@@ -1,6 +1,6 @@
 "use server"
 
-import { IgdbGame } from "@/lib/types"
+import { IgdbGame, IgdbGameDetails } from "@/lib/types"
 import prisma from "@/lib/prisma"
 import { Status, Platform } from "@/lib/generated/prisma/enums"
 import { revalidatePath } from "next/cache"
@@ -22,7 +22,7 @@ export async function readGame(id: number) {
   return await prisma.game.findUnique({ where: { id: id } })
 }
 
-export async function getGameDetails(id: number) {
+export async function getGameDetails(id: number): Promise<IgdbGameDetails[]> {
   if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_TOKEN) {
     throw new Error("Missing IGDB credentials")
   }

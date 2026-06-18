@@ -11,6 +11,7 @@ import {
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function GameCard(game: IgdbGame) {
   const [loading, setLoading] = useState(false)
@@ -34,7 +35,9 @@ export default function GameCard(game: IgdbGame) {
         alt={`${game.name} image`}
       />
       <CardHeader>
-        <CardTitle>{`${game.name} (${new Date(game.first_release_date * 1000).toLocaleDateString("en-EN", { year: "numeric" })})`}</CardTitle>
+        <Link href={`/${game.id}`}>
+          <CardTitle>{`${game.name} (${new Date(game.first_release_date * 1000).toLocaleDateString("en-EN", { year: "numeric" })})`}</CardTitle>
+        </Link>
       </CardHeader>
       <CardContent className="flex grow flex-col gap-2">
         <div>

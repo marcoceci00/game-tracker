@@ -6,9 +6,22 @@ export type IgdbGame = {
   cover: { image_id: string }
   aggregated_rating: number
   first_release_date: number
-  genres: [{ name: string }]
+  genres: { name: string }[]
 }
 
 export type LibraryGame = Omit<GameModel, "userRating"> & {
   userRating: number | null
+}
+
+export type IgdbGameDetails = {
+  id: number
+  name?: string
+  cover?: { image_id: string }
+  genres?: { name: string }[]
+  aggregated_rating?: number
+  first_release_date?: number
+  summary?: string
+  screenshots?: { id: number; image_id: string }[]
+  platforms?: { id: number; name: string }[]
+  involved_companies?: { id: number; company: { name: string } }[]
 }
