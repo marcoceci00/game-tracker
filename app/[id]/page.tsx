@@ -49,7 +49,7 @@ export default async function GameDetails({
           className="h-auto w-full rounded-lg"
           src={
             display.cover
-              ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${display.cover}.jpg`
+              ? `https://images.igdb.com/igdb/image/upload/t_1080p/${display.cover}.jpg`
               : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
           }
           width={1080}
@@ -147,7 +147,6 @@ export default async function GameDetails({
                       <Image
                         src={`https://images.igdb.com/igdb/image/upload/t_1080p/${s.image_id}.jpg`}
                         fill
-                        sizes="100vw"
                         alt="screenshot"
                         className="rounded-lg object-cover"
                       />
