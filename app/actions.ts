@@ -121,3 +121,11 @@ export async function updateRating(id: number, userRating: number) {
   })
   revalidatePath("/library")
 }
+
+export async function updateNotes(id: number, notes: string) {
+  await prisma.game.update({
+    where: { id: id },
+    data: { notes: notes },
+  })
+  revalidatePath("/library")
+}

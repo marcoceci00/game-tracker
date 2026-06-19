@@ -25,6 +25,7 @@ import {
   updatePlatform,
   updateRating,
   deleteGame,
+  updateNotes,
 } from "@/app/actions"
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
@@ -39,7 +40,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog"
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 
 const statusColor: Record<string, string> = {
   WISHLIST: "!bg-purple-500",
@@ -52,6 +54,7 @@ const statusColor: Record<string, string> = {
 
 export default function LibraryCard(game: LibraryGame) {
   const [ratingValue, setRatingValue] = useState([Number(game.userRating)])
+  const [notesValue, setNotesValue] = useState(game.notes ?? "")
 
   async function handleStatusChange(id: number, status: string) {
     try {
@@ -168,6 +171,14 @@ export default function LibraryCard(game: LibraryGame) {
           min={1}
           max={10}
           step={0.5}
+        />
+        <Textarea
+          className="w-full rounded-md border bg-background p-2 text-sm"
+          rows={3}
+          placeholder="Personal notes..."
+          value={notesValue}
+          onChange={(e) => setNotesValue(e.target.value)}
+          onBlur={() => updateNotes(game.id, notesValue)}
         />
       </CardContent>
       <CardFooter>

@@ -19,6 +19,7 @@ model Game {
   genres       String[]  @default([])
   rating       Int?
   release_date DateTime?
+  notes        String?
 }
 
 enum Platform {
