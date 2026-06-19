@@ -1,7 +1,5 @@
-import Image from "next/image"
-import { readGame, getGameDetails } from "@/app/actions"
-import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Carousel,
   CarouselContent,
@@ -9,6 +7,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { getGameDetails, readGame } from "@/app/actions"
+import Image from "next/image"
+import InsertButton from "@/components/insert-button"
+import { notFound } from "next/navigation"
 
 export default async function GameDetails({
   params,
@@ -20,6 +22,7 @@ export default async function GameDetails({
     readGame(Number(id)),
     getGameDetails(Number(id)),
   ])
+  console.log(game)
   const details = gameDetails[0]
 
   if (!game && !details) {
@@ -55,19 +58,28 @@ export default async function GameDetails({
           width={1080}
           height={1920}
           alt={`${display.name} image`}
+          loading="eager"
         />
         <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold">{display.name}</h1>
-            <p className="mt-1 text-muted-foreground">
-              {display.release_date
-                ? display.release_date.toLocaleDateString("en", {
-                    year: "numeric",
-                  })
-                : "N.A."}
-            </p>
+          <div className="flex flex-row justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">{display.name}</h1>
+              <p className="mt-1 text-muted-foreground">
+                {display.release_date
+                  ? display.release_date.toLocaleDateString("en", {
+                      year: "numeric",
+                    })
+                  : "N.A."}
+              </p>
+            </div>
+            <div>
+              {game ? (
+                <Button disabled>Already in library</Button>
+              ) : (
+                <InsertButton game={details} />
+              )}
+            </div>
           </div>
-
           <div className="flex items-center gap-3">
             <span
               className={`rounded-md px-3 py-1 text-sm font-semibold text-white ${
@@ -92,7 +104,6 @@ export default async function GameDetails({
               </div>
             )}
           </div>
-
           {details?.summary && (
             <div>
               <h2 className="mb-1 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
@@ -101,7 +112,6 @@ export default async function GameDetails({
               <p className="text-sm leading-relaxed">{details.summary}</p>
             </div>
           )}
-
           {details?.platforms && details.platforms.length > 0 && (
             <div>
               <h2 className="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
@@ -114,7 +124,6 @@ export default async function GameDetails({
               </div>
             </div>
           )}
-
           {details?.involved_companies &&
             details.involved_companies.length > 0 && (
               <div>
@@ -132,7 +141,6 @@ export default async function GameDetails({
             )}
         </div>
       </div>
-
       {details?.screenshots && details.screenshots.length > 0 && (
         <div className="mt-10">
           <h2 className="mb-4 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
@@ -147,8 +155,10 @@ export default async function GameDetails({
                       <Image
                         src={`https://images.igdb.com/igdb/image/upload/t_1080p/${s.image_id}.jpg`}
                         fill
+                        sizes="25vw"
                         alt="screenshot"
                         className="rounded-lg object-cover"
+                        loading="eager"
                       />
                     </div>
                   </CarouselItem>

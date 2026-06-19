@@ -30,6 +30,16 @@ import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog"
 
 const statusColor: Record<string, string> = {
   WISHLIST: "!bg-purple-500",
@@ -161,9 +171,31 @@ export default function LibraryCard(game: LibraryGame) {
         />
       </CardContent>
       <CardFooter>
-        <Button variant="destructive" onClick={() => handleDelete(game.id)}>
-          Delete
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="destructive">Delete</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Are you sure?</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete your
+                game from your library.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(game.id)}
+              >
+                Continue
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardFooter>
     </Card>
   )

@@ -1,6 +1,4 @@
 import { IgdbGame } from "@/lib/types"
-import { useState } from "react"
-import { addGameIfNotExists } from "@/app/actions"
 import {
   Card,
   CardHeader,
@@ -10,18 +8,10 @@ import {
 } from "@/components/ui/card"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import InsertButton from "./insert-button"
 
 export default function GameCard(game: IgdbGame) {
-  const [loading, setLoading] = useState(false)
-
-  async function handleClick() {
-    setLoading(true)
-    await addGameIfNotExists(game)
-    setLoading(false)
-  }
-
   return (
     <Card>
       <Image
@@ -60,9 +50,7 @@ export default function GameCard(game: IgdbGame) {
         </Badge>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleClick} disabled={loading}>
-          {loading ? "Loading..." : "Add to library"}
-        </Button>
+        <InsertButton game={game} />
       </CardFooter>
     </Card>
   )

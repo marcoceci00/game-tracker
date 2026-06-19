@@ -80,7 +80,10 @@ export async function addGameIfNotExists(game: IgdbGame) {
 
   if (!exists) {
     await createGame(game)
+    return true
   }
+
+  return false
 }
 
 export async function updateStatus(id: number, status: string) {
