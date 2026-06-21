@@ -86,8 +86,8 @@ export default async function Page() {
     .slice(0, 8)
 
   return (
-    <div className="mx-auto w-3/4 pt-8">
-      <div className="mt-4 grid grid-cols-2 gap-4">
+    <div className="mx-auto w-full max-w-5xl px-4 pt-8">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Total Games</CardTitle>
@@ -105,7 +105,7 @@ export default async function Page() {
           </CardContent>
         </Card>
       </div>
-      <div className="mt-4 grid grid-cols-6 gap-4">
+      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         {STAT_CARDS.map((item) => (
           <Card key={item.key}>
             <CardHeader>
@@ -121,7 +121,7 @@ export default async function Page() {
       </div>
       <h2 className="mt-8 text-2xl font-semibold">Top Genres</h2>
       {genreCounts.length > 0 ? (
-        <div className="mt-4 grid grid-cols-4 gap-4">
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {genreCounts.map(([genre, count]) => (
             <Card key={genre}>
               <CardHeader>

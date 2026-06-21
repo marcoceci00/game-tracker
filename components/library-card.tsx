@@ -195,7 +195,7 @@ export default function LibraryCard(game: LibraryGame) {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <DialogClose>
+              <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
               <Button

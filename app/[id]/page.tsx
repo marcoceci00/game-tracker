@@ -22,7 +22,6 @@ export default async function GameDetails({
     readGame(Number(id)),
     getGameDetails(Number(id)),
   ])
-  console.log(game)
   const details = gameDetails[0]
 
   if (!game && !details) {
