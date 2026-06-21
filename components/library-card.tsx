@@ -42,8 +42,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { Platform, Status } from "@/lib/generated/prisma/enums"
 
-const statusColor: Record<string, string> = {
+const statusColor: Record<Status, string> = {
   WISHLIST: "!bg-purple-500",
   BACKLOG: "!bg-slate-500",
   PLAYING: "!bg-yellow-500",
@@ -56,7 +57,7 @@ export default function LibraryCard(game: LibraryGame) {
   const [ratingValue, setRatingValue] = useState([Number(game.userRating)])
   const [notesValue, setNotesValue] = useState(game.notes ?? "")
 
-  async function handleStatusChange(id: number, status: string) {
+  async function handleStatusChange(id: number, status: Status) {
     try {
       await updateStatus(id, status)
       toast.success("Status has been changed")
@@ -65,7 +66,7 @@ export default function LibraryCard(game: LibraryGame) {
     }
   }
 
-  async function handlePlatformChange(id: number, platform: string) {
+  async function handlePlatformChange(id: number, platform: Platform) {
     try {
       await updatePlatform(id, platform)
       toast.success("Platform has been changed")
@@ -103,6 +104,7 @@ export default function LibraryCard(game: LibraryGame) {
         width={1080}
         height={1920}
         alt={`${game.name} image`}
+        loading="lazy"
       />
       <CardHeader>
         <Link href={`/${game.id}`}>
@@ -110,10 +112,12 @@ export default function LibraryCard(game: LibraryGame) {
         </Link>
         <CardAction>
           <Select
-            defaultValue={game.status}
-            onValueChange={(status) => handleStatusChange(game.id, status)}
+            value={game.status}
+            onValueChange={(status) =>
+              handleStatusChange(game.id, status as Status)
+            }
           >
-            <SelectTrigger className={`${statusColor[game.status]}`}>
+            <SelectTrigger className={statusColor[game.status]}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -131,7 +135,7 @@ export default function LibraryCard(game: LibraryGame) {
       </CardHeader>
       <CardContent className="flex grow flex-col gap-2">
         <div>
-          {game.genres && (
+          {game.genres.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {game.genres.map((genre) => (
                 <Badge variant="secondary" key={genre}>
@@ -142,8 +146,10 @@ export default function LibraryCard(game: LibraryGame) {
           )}
         </div>
         <Select
-          defaultValue={game.platform}
-          onValueChange={(platform) => handlePlatformChange(game.id, platform)}
+          value={game.platform}
+          onValueChange={(platform) =>
+            handlePlatformChange(game.id, platform as Platform)
+          }
         >
           <SelectTrigger>
             <SelectValue />
@@ -163,7 +169,8 @@ export default function LibraryCard(game: LibraryGame) {
         >
           {!game.rating ? "N.A." : Math.round(game.rating)}
         </Badge>
-        <span>{ratingValue.join()}</span>
+        <span className="text-sm text-muted-foreground">My Rating:</span>
+        <span>{ratingValue[0] === 0 ? "-" : ratingValue[0]}</span>
         <Slider
           value={ratingValue}
           onValueChange={setRatingValue}
@@ -173,7 +180,6 @@ export default function LibraryCard(game: LibraryGame) {
           step={0.5}
         />
         <Textarea
-          className="w-full rounded-md border bg-background p-2 text-sm"
           rows={3}
           placeholder="Personal notes..."
           value={notesValue}

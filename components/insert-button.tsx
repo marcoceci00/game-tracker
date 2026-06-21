@@ -4,8 +4,9 @@ import { useState } from "react"
 import { addGameIfNotExists } from "@/app/actions"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { IgdbGame } from "@/lib/types"
 
-export default function InsertButton({ game }: any) {
+export default function InsertButton({ game }: { game: IgdbGame }) {
   const [loading, setLoading] = useState(false)
 
   async function handleClick() {
@@ -21,9 +22,9 @@ export default function InsertButton({ game }: any) {
       }
     } catch {
       toast.error("Something went wrong")
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (

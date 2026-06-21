@@ -11,6 +11,18 @@ import { getGameDetails, readGame } from "@/app/actions"
 import Image from "next/image"
 import InsertButton from "@/components/insert-button"
 import { notFound } from "next/navigation"
+import { Metadata } from "next"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const game = await readGame(Number(id))
+  const details = await getGameDetails(Number(id))
+  return { title: game?.name ?? details[0]?.name ?? "Game" }
+}
 
 export default async function GameDetails({
   params,
@@ -41,11 +53,12 @@ export default async function GameDetails({
       (details?.aggregated_rating
         ? Math.round(details.aggregated_rating)
         : null),
-    genres: game?.genres ?? details?.genres?.map((g) => g.name),
+    genres:
+      game?.genres ?? details?.genres?.map((g: { name: string }) => g.name),
   }
 
   return (
-    <div className="mx-auto w-3/4 py-8">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[300px_1fr]">
         <Image
           className="h-auto w-full rounded-lg"
@@ -60,7 +73,7 @@ export default async function GameDetails({
           loading="eager"
         />
         <div className="flex flex-col gap-6">
-          <div className="flex flex-row justify-between">
+          <div className="flex flex-row flex-wrap justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold">{display.name}</h1>
               <p className="mt-1 text-muted-foreground">
@@ -95,7 +108,7 @@ export default async function GameDetails({
             </span>
             {display.genres && (
               <div className="flex flex-wrap gap-2">
-                {display.genres.map((genre) => (
+                {display.genres.map((genre: string) => (
                   <Badge variant="secondary" key={genre}>
                     {genre}
                   </Badge>
@@ -117,7 +130,7 @@ export default async function GameDetails({
                 Platforms
               </h2>
               <div className="flex flex-wrap gap-2">
-                {details.platforms.map((p) => (
+                {details.platforms.map((p: { id: number; name: string }) => (
                   <Badge key={p.id}>{p.name}</Badge>
                 ))}
               </div>
@@ -130,11 +143,13 @@ export default async function GameDetails({
                   Developers
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {details.involved_companies.map((c) => (
-                    <Badge key={c.id} variant="outline">
-                      {c.company.name}
-                    </Badge>
-                  ))}
+                  {details.involved_companies.map(
+                    (c: { id: number; company: { name: string } }) => (
+                      <Badge key={c.id} variant="outline">
+                        {c.company.name}
+                      </Badge>
+                    )
+                  )}
                 </div>
               </div>
             )}
@@ -148,20 +163,25 @@ export default async function GameDetails({
           <div>
             <Carousel opts={{ loop: true }}>
               <CarouselContent>
-                {details.screenshots.map((s) => (
-                  <CarouselItem key={s.id} className="basis-1/3">
-                    <div className="relative aspect-video">
-                      <Image
-                        src={`https://images.igdb.com/igdb/image/upload/t_1080p/${s.image_id}.jpg`}
-                        fill
-                        sizes="25vw"
-                        alt="screenshot"
-                        className="rounded-lg object-cover"
-                        loading="eager"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
+                {details.screenshots.map(
+                  (s: { id: number; image_id: string }) => (
+                    <CarouselItem
+                      key={s.id}
+                      className="basis-full sm:basis-1/2 md:basis-1/3"
+                    >
+                      <div className="relative aspect-video">
+                        <Image
+                          src={`https://images.igdb.com/igdb/image/upload/t_1080p/${s.image_id}.jpg`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                          alt="screenshot"
+                          className="rounded-lg object-cover"
+                          loading="eager"
+                        />
+                      </div>
+                    </CarouselItem>
+                  )
+                )}
               </CarouselContent>
               <CarouselPrevious />
               <CarouselNext />

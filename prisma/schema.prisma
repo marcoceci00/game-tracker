@@ -10,7 +10,7 @@ datasource db {
 model Game {
   id           Int       @id
   name         String
-  userRating   Decimal?
+  userRating   Decimal   @default(0)
   platform     Platform  @default(PC)
   status       Status    @default(WISHLIST)
   createdAt    DateTime  @default(now())

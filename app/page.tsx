@@ -2,6 +2,9 @@ import { Status } from "@/lib/generated/prisma/enums"
 import prisma from "@/lib/prisma"
 import LibraryCard from "@/components/library-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Metadata } from "next"
+
+export const metadata: Metadata = { title: "Home" }
 
 const STAT_CARDS: { label: string; key: Status }[] = [
   { label: "Wishlist", key: "WISHLIST" },
@@ -26,7 +29,10 @@ export default async function Page() {
       where: { status: Status.PLAYING },
     }),
     prisma.game.groupBy({ by: ["status"], _count: true }),
-    prisma.game.aggregate({ _avg: { userRating: true } }),
+    prisma.game.aggregate({
+      where: { userRating: { gt: 0 } },
+      _avg: { userRating: true },
+    }),
     prisma.game.findMany({
       where: { status: Status.COMPLETED },
       orderBy: { updatedAt: "desc" },
@@ -37,7 +43,7 @@ export default async function Page() {
       take: 4,
     }),
     prisma.game.findMany({
-      where: { userRating: { not: null } },
+      where: { userRating: { gt: 0 } },
       orderBy: { userRating: "desc" },
       take: 4,
     }),
@@ -46,7 +52,7 @@ export default async function Page() {
 
   const playingGames = playingGamesRaw.map((game) => ({
     ...game,
-    userRating: game.userRating ? Number(game.userRating) : null,
+    userRating: Number(game.userRating),
   }))
 
   const countByStatus = Object.fromEntries(
@@ -61,17 +67,17 @@ export default async function Page() {
 
   const recentlyCompleted = recentlyCompletedRaw.map((game) => ({
     ...game,
-    userRating: game.userRating ? Number(game.userRating) : null,
+    userRating: Number(game.userRating),
   }))
 
   const recentlyAdded = recentlyAddedRaw.map((game) => ({
     ...game,
-    userRating: game.userRating ? Number(game.userRating) : null,
+    userRating: Number(game.userRating),
   }))
 
   const topRated = topRatedRaw.map((game) => ({
     ...game,
-    userRating: game.userRating ? Number(game.userRating) : null,
+    userRating: Number(game.userRating),
   }))
 
   const genreCounts = Object.entries(
@@ -86,7 +92,8 @@ export default async function Page() {
     .slice(0, 8)
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pt-8">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8">
+      <h1 className="mb-4 text-2xl font-semibold">Home</h1>
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>

@@ -1,28 +1,16 @@
 "use server"
 
-import { IgdbGame, IgdbGameDetails } from "@/lib/types"
+import { IgdbGame } from "@/lib/types"
 import prisma from "@/lib/prisma"
 import { Status, Platform } from "@/lib/generated/prisma/enums"
 import { revalidatePath } from "next/cache"
+import { cache } from "react"
 
-export async function createGame(game: IgdbGame) {
-  await prisma.game.create({
-    data: {
-      id: game.id,
-      name: game.name,
-      cover: game.cover.image_id || null,
-      genres: game.genres.map((genre) => genre.name),
-      rating: Math.round(game.aggregated_rating) || null,
-      release_date: new Date(game.first_release_date * 1000) || null,
-    },
-  })
-}
-
-export async function readGame(id: number) {
+export const readGame = cache(async (id: number) => {
   return await prisma.game.findUnique({ where: { id: id } })
-}
+})
 
-export async function getGameDetails(id: number): Promise<IgdbGameDetails[]> {
+export const getGameDetails = cache(async (id: number) => {
   if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_TOKEN) {
     throw new Error("Missing IGDB credentials")
   }
@@ -40,13 +28,30 @@ export async function getGameDetails(id: number): Promise<IgdbGameDetails[]> {
   })
 
   return await response.json()
-}
+})
 
-export async function updateGame() {}
+export async function createGame(game: IgdbGame) {
+  await prisma.game.create({
+    data: {
+      id: game.id,
+      name: game.name,
+      cover: game.cover?.image_id ?? null,
+      genres: game.genres.map((genre) => genre.name),
+      rating: game.aggregated_rating
+        ? Math.round(game.aggregated_rating)
+        : null,
+      release_date: game.first_release_date
+        ? new Date(game.first_release_date * 1000)
+        : null,
+    },
+  })
+
+  revalidatePath("/", "layout")
+}
 
 export async function deleteGame(id: number) {
   await prisma.game.delete({ where: { id: id } })
-  revalidatePath("/library")
+  revalidatePath("/", "layout")
 }
 
 export async function searchGame(data: { name: string }) {
@@ -70,7 +75,8 @@ export async function searchGame(data: { name: string }) {
 
   const result = await response.json()
   const sortedResult = result.sort(
-    (a: IgdbGame, b: IgdbGame) => b.first_release_date - a.first_release_date
+    (a: IgdbGame, b: IgdbGame) =>
+      (b.first_release_date ?? 0) - (a.first_release_date ?? 0)
   )
   return sortedResult
 }
@@ -86,28 +92,28 @@ export async function addGameIfNotExists(game: IgdbGame) {
   return false
 }
 
-export async function updateStatus(id: number, status: string) {
+export async function updateStatus(id: number, status: Status) {
   await prisma.game.update({
     where: {
       id: id,
     },
     data: {
-      status: status as Status,
+      status: status,
     },
   })
-  revalidatePath("/library")
+  revalidatePath("/", "layout")
 }
 
-export async function updatePlatform(id: number, platform: string) {
+export async function updatePlatform(id: number, platform: Platform) {
   await prisma.game.update({
     where: {
       id: id,
     },
     data: {
-      platform: platform as Platform,
+      platform: platform,
     },
   })
-  revalidatePath("/library")
+  revalidatePath("/", "layout")
 }
 
 export async function updateRating(id: number, userRating: number) {
@@ -119,7 +125,7 @@ export async function updateRating(id: number, userRating: number) {
       userRating: userRating,
     },
   })
-  revalidatePath("/library")
+  revalidatePath("/", "layout")
 }
 
 export async function updateNotes(id: number, notes: string) {
@@ -127,5 +133,5 @@ export async function updateNotes(id: number, notes: string) {
     where: { id: id },
     data: { notes: notes },
   })
-  revalidatePath("/library")
+  revalidatePath("/", "layout")
 }

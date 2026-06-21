@@ -23,15 +23,16 @@ export default function GameCard(game: IgdbGame) {
         width={1080}
         height={1920}
         alt={`${game.name} image`}
+        loading="lazy"
       />
       <CardHeader>
         <Link href={`/${game.id}`}>
-          <CardTitle>{`${game.name} (${new Date(game.first_release_date * 1000).toLocaleDateString("en-EN", { year: "numeric" })})`}</CardTitle>
+          <CardTitle>{`${game.name} (${game.first_release_date ? new Date(game.first_release_date * 1000).toLocaleDateString("en-EN", { year: "numeric" }) : "N.A."})`}</CardTitle>
         </Link>
       </CardHeader>
       <CardContent className="flex grow flex-col gap-2">
         <div>
-          {game.genres && (
+          {game.genres.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {game.genres.map((genre) => (
                 <Badge variant="secondary" key={genre.name}>
