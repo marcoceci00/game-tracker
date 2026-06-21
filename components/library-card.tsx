@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Platform, Status } from "@/lib/generated/prisma/enums"
+import { ViewTransition } from "react"
 
 const statusColor: Record<Status, string> = {
   WISHLIST: "!bg-purple-500",
@@ -53,7 +54,10 @@ const statusColor: Record<Status, string> = {
   DROPPED: "!bg-red-500",
 }
 
-export default function LibraryCard(game: LibraryGame) {
+export default function LibraryCard({
+  section,
+  ...game
+}: LibraryGame & { section?: string }) {
   const [ratingValue, setRatingValue] = useState([Number(game.userRating)])
   const [notesValue, setNotesValue] = useState(game.notes ?? "")
 
@@ -94,22 +98,29 @@ export default function LibraryCard(game: LibraryGame) {
   }
 
   return (
-    <Card>
-      <Image
-        src={
-          game.cover
-            ? `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover}.jpg`
-            : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
-        }
-        width={1080}
-        height={1920}
-        alt={`${game.name} image`}
-        loading="lazy"
-      />
+    <Card className="h-full pt-0">
+      <Link
+        href={`/${game.id}`}
+        className="block rounded-t-xl transition-opacity hover:opacity-90"
+      >
+        <ViewTransition
+          name={`cover-${section ? section + "-" : ""}${game.id}`}
+        >
+          <Image
+            src={
+              game.cover
+                ? `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover}.jpg`
+                : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
+            }
+            width={1080}
+            height={1920}
+            alt={`${game.name} image`}
+            loading="lazy"
+          />
+        </ViewTransition>
+      </Link>
       <CardHeader>
-        <Link href={`/${game.id}`}>
-          <CardTitle>{`${game.name} (${game.release_date ? new Date(game.release_date).toLocaleDateString("en-EN", { year: "numeric" }) : "N.A."})`}</CardTitle>
-        </Link>
+        <CardTitle>{`${game.name} (${game.release_date ? new Date(game.release_date).toLocaleDateString("en-EN", { year: "numeric" }) : "N.A."})`}</CardTitle>
         <CardAction>
           <Select
             value={game.status}

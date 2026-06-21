@@ -6,7 +6,7 @@ export type IgdbGame = {
   cover?: { image_id: string }
   aggregated_rating?: number
   first_release_date?: number
-  genres: { name: string }[]
+  genres?: { name: string }[]
 }
 
 export type LibraryGame = Omit<GameModel, "userRating"> & {

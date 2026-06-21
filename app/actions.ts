@@ -27,6 +27,8 @@ export const getGameDetails = cache(async (id: number) => {
       `,
   })
 
+  if (!response.ok) throw new Error(`IGDB error: ${response.status}`)
+
   return await response.json()
 })
 
@@ -36,7 +38,7 @@ export async function createGame(game: IgdbGame) {
       id: game.id,
       name: game.name,
       cover: game.cover?.image_id ?? null,
-      genres: game.genres.map((genre) => genre.name),
+      genres: game.genres?.map((genre) => genre.name),
       rating: game.aggregated_rating
         ? Math.round(game.aggregated_rating)
         : null,
@@ -72,6 +74,8 @@ export async function searchGame(data: { name: string }) {
         limit 500;
       `,
   })
+
+  if (!response.ok) throw new Error(`IGDB error: ${response.status}`)
 
   const result = await response.json()
   const sortedResult = result.sort(

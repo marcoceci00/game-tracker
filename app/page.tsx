@@ -146,8 +146,14 @@ export default async function Page() {
       <h2 className="mt-8 text-2xl font-semibold">Currently Playing</h2>
       {playingGames.length > 0 ? (
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {playingGames.map((game) => (
-            <LibraryCard {...game} key={game.id} />
+          {playingGames.map((game, i) => (
+            <div
+              key={game.id}
+              className="animate-in fill-mode-both fade-in"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <LibraryCard {...game} section="playing" />
+            </div>
           ))}
         </div>
       ) : (
@@ -156,8 +162,14 @@ export default async function Page() {
       <h2 className="mt-8 text-2xl font-semibold">Recently Completed</h2>
       {recentlyCompleted.length > 0 ? (
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {recentlyCompleted.map((game) => (
-            <LibraryCard {...game} key={game.id} />
+          {recentlyCompleted.map((game, i) => (
+            <div
+              key={game.id}
+              className="animate-in fill-mode-both fade-in"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <LibraryCard {...game} section="completed" />
+            </div>
           ))}
         </div>
       ) : (
@@ -166,8 +178,14 @@ export default async function Page() {
       <h2 className="mt-8 text-2xl font-semibold">Recently Added</h2>
       {recentlyAdded.length > 0 ? (
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {recentlyAdded.map((game) => (
-            <LibraryCard {...game} key={game.id} />
+          {recentlyAdded.map((game, i) => (
+            <div
+              key={game.id}
+              className="animate-in fill-mode-both fade-in"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <LibraryCard {...game} section="added" />
+            </div>
           ))}
         </div>
       ) : (
@@ -176,8 +194,14 @@ export default async function Page() {
       <h2 className="mt-8 text-2xl font-semibold">Top Rated</h2>
       {topRated.length > 0 ? (
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {topRated.map((game) => (
-            <LibraryCard {...game} key={game.id} />
+          {topRated.map((game, i) => (
+            <div
+              key={game.id}
+              className="animate-in fill-mode-both fade-in"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <LibraryCard {...game} section="top" />
+            </div>
           ))}
         </div>
       ) : (

@@ -12,6 +12,7 @@ import Image from "next/image"
 import InsertButton from "@/components/insert-button"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
+import { ViewTransition } from "react"
 
 export async function generateMetadata({
   params,
@@ -60,18 +61,20 @@ export default async function GameDetails({
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[300px_1fr]">
-        <Image
-          className="h-auto w-full rounded-lg"
-          src={
-            display.cover
-              ? `https://images.igdb.com/igdb/image/upload/t_1080p/${display.cover}.jpg`
-              : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
-          }
-          width={1080}
-          height={1920}
-          alt={`${display.name} image`}
-          loading="eager"
-        />
+        <ViewTransition name={`cover-${id}`}>
+          <Image
+            className="h-auto w-full rounded-lg"
+            src={
+              display.cover
+                ? `https://images.igdb.com/igdb/image/upload/t_1080p/${display.cover}.jpg`
+                : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
+            }
+            width={1080}
+            height={1920}
+            alt={`${display.name} image`}
+            loading="eager"
+          />
+        </ViewTransition>
         <div className="flex flex-col gap-6">
           <div className="flex flex-row flex-wrap justify-between gap-4">
             <div>

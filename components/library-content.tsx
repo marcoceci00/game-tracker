@@ -111,8 +111,14 @@ export default function LibraryContent({ games }: { games: LibraryGame[] }) {
         placeholder="Search your library..."
       />
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {filtered.map((game) => (
-          <LibraryCard {...game} key={game.id} />
+        {filtered.map((game, i) => (
+          <div
+            key={game.id}
+            className="animate-in fill-mode-both fade-in"
+            style={{ animationDelay: `${i * 50}ms` }}
+          >
+            <LibraryCard {...game} />
+          </div>
         ))}
       </div>
       {filtered.length === 0 && (

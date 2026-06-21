@@ -32,9 +32,9 @@ export default function GameCard(game: IgdbGame) {
       </CardHeader>
       <CardContent className="flex grow flex-col gap-2">
         <div>
-          {game.genres.length > 0 && (
+          {(game.genres?.length ?? 0) > 0 && (
             <div className="flex flex-wrap gap-2">
-              {game.genres.map((genre) => (
+              {game.genres?.map((genre) => (
                 <Badge variant="secondary" key={genre.name}>
                   {genre.name}
                 </Badge>
