@@ -78,14 +78,18 @@ export default async function GameDetails({
         <div className="flex flex-col gap-6">
           <div className="flex flex-row flex-wrap justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold">{display.name}</h1>
-              <p className="mt-1 text-muted-foreground">
-                {display.release_date
-                  ? display.release_date.toLocaleDateString("en", {
-                      year: "numeric",
-                    })
-                  : "N.A."}
-              </p>
+              <ViewTransition name={`game-title-${id}`}>
+                <h1 className="text-3xl font-bold">{display.name}</h1>
+              </ViewTransition>
+              <ViewTransition name={`release-date-${id}`}>
+                <p className="mt-1 text-muted-foreground">
+                  {display.release_date
+                    ? display.release_date.toLocaleDateString("en", {
+                        year: "numeric",
+                      })
+                    : "N.A."}
+                </p>
+              </ViewTransition>
             </div>
             <div>
               {game ? (
@@ -96,27 +100,31 @@ export default async function GameDetails({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span
-              className={`rounded-md px-3 py-1 text-sm font-semibold text-white ${
-                !display.rating
-                  ? "bg-accent"
-                  : display.rating < 60
-                    ? "bg-red-500"
-                    : display.rating < 90
-                      ? "bg-blue-500"
-                      : "bg-green-500"
-              }`}
-            >
-              {!display.rating ? "N.A." : display.rating}
-            </span>
+            <ViewTransition name={`rating-${id}`}>
+              <span
+                className={`rounded-md px-3 py-1 text-sm font-semibold text-white ${
+                  !display.rating
+                    ? "bg-accent"
+                    : display.rating < 60
+                      ? "bg-red-500"
+                      : display.rating < 90
+                        ? "bg-blue-500"
+                        : "bg-green-500"
+                }`}
+              >
+                {!display.rating ? "N.A." : display.rating}
+              </span>
+            </ViewTransition>
             {display.genres && (
-              <div className="flex flex-wrap gap-2">
-                {display.genres.map((genre: string) => (
-                  <Badge variant="secondary" key={genre}>
-                    {genre}
-                  </Badge>
-                ))}
-              </div>
+              <ViewTransition name={`genres-${id}`}>
+                <div className="flex flex-wrap gap-2">
+                  {display.genres.map((genre: string) => (
+                    <Badge variant="secondary" key={genre}>
+                      {genre}
+                    </Badge>
+                  ))}
+                </div>
+              </ViewTransition>
             )}
           </div>
           {details?.summary && (
@@ -177,9 +185,9 @@ export default async function GameDetails({
                           src={`https://images.igdb.com/igdb/image/upload/t_1080p/${s.image_id}.jpg`}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                          alt="screenshot"
+                          alt={`${display.name} screenshot`}
                           className="rounded-lg object-cover"
-                          loading="eager"
+                          loading="lazy"
                         />
                       </div>
                     </CarouselItem>

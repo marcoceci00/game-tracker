@@ -120,7 +120,18 @@ export default function LibraryCard({
         </ViewTransition>
       </Link>
       <CardHeader>
-        <CardTitle>{`${game.name} (${game.release_date ? new Date(game.release_date).toLocaleDateString("en-EN", { year: "numeric" }) : "N.A."})`}</CardTitle>
+        <ViewTransition name={`game-title-${game.id}`}>
+          <CardTitle>{game.name}</CardTitle>
+        </ViewTransition>
+        <ViewTransition name={`release-date-${game.id}`}>
+          <p className="text-sm text-muted-foreground">
+            {game.release_date
+              ? new Date(game.release_date).toLocaleDateString("en", {
+                  year: "numeric",
+                })
+              : "N.A."}
+          </p>
+        </ViewTransition>
         <CardAction>
           <Select
             value={game.status}
@@ -145,17 +156,19 @@ export default function LibraryCard({
         </CardAction>
       </CardHeader>
       <CardContent className="flex grow flex-col gap-2">
-        <div>
-          {game.genres.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {game.genres.map((genre) => (
-                <Badge variant="secondary" key={genre}>
-                  {genre}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
+        <ViewTransition name={`genres-${game.id}`}>
+          <div>
+            {game.genres.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {game.genres.map((genre) => (
+                  <Badge variant="secondary" key={genre}>
+                    {genre}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </ViewTransition>
         <Select
           value={game.platform}
           onValueChange={(platform) =>
@@ -175,11 +188,13 @@ export default function LibraryCard({
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Badge
-          className={`${!game.rating ? "bg-accent" : Math.round(game.rating) < 60 ? "bg-red-500" : Math.round(game.rating) < 90 ? "bg-blue-500" : "bg-green-500"} mt-auto p-4`}
-        >
-          {!game.rating ? "N.A." : Math.round(game.rating)}
-        </Badge>
+        <ViewTransition name={`rating-${game.id}`}>
+          <Badge
+            className={`${!game.rating ? "bg-accent" : Math.round(game.rating) < 60 ? "bg-red-500" : Math.round(game.rating) < 90 ? "bg-blue-500" : "bg-green-500"} mt-auto p-4`}
+          >
+            {!game.rating ? "N.A." : Math.round(game.rating)}
+          </Badge>
+        </ViewTransition>
         <span className="text-sm text-muted-foreground">My Rating:</span>
         <span>{ratingValue[0] === 0 ? "-" : ratingValue[0]}</span>
         <Slider
