@@ -5,6 +5,33 @@ import prisma from "@/lib/prisma"
 import { Status, Platform } from "@/lib/generated/prisma/enums"
 import { revalidatePath } from "next/cache"
 import { cache } from "react"
+import { cookies } from "next/headers"
+import {
+  EDIT_COOKIE_NAME,
+  editTokenFor,
+  requireEditAccess,
+  verifyEditPassword,
+} from "@/lib/auth"
+
+export async function unlockEditing(password: string) {
+  const ok = verifyEditPassword(password)
+
+  if (ok) {
+    ;(await cookies()).set(EDIT_COOKIE_NAME, editTokenFor(password), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    })
+  }
+
+  return ok
+}
+
+export async function lockEditing() {
+  ;(await cookies()).delete(EDIT_COOKIE_NAME)
+}
 
 export const readGame = cache(async (id: number) => {
   return await prisma.game.findUnique({ where: { id: id } })
@@ -33,6 +60,8 @@ export const getGameDetails = cache(async (id: number) => {
 })
 
 export async function createGame(game: IgdbGame) {
+  await requireEditAccess()
+
   await prisma.game.create({
     data: {
       id: game.id,
@@ -52,6 +81,8 @@ export async function createGame(game: IgdbGame) {
 }
 
 export async function deleteGame(id: number) {
+  await requireEditAccess()
+
   await prisma.game.delete({ where: { id: id } })
   revalidatePath("/", "layout")
 }
@@ -97,6 +128,8 @@ export async function addGameIfNotExists(game: IgdbGame) {
 }
 
 export async function updateStatus(id: number, status: Status) {
+  await requireEditAccess()
+
   await prisma.game.update({
     where: {
       id: id,
@@ -109,6 +142,8 @@ export async function updateStatus(id: number, status: Status) {
 }
 
 export async function updatePlatform(id: number, platform: Platform) {
+  await requireEditAccess()
+
   await prisma.game.update({
     where: {
       id: id,
@@ -121,6 +156,8 @@ export async function updatePlatform(id: number, platform: Platform) {
 }
 
 export async function updateRating(id: number, userRating: number) {
+  await requireEditAccess()
+
   await prisma.game.update({
     where: {
       id: id,
@@ -133,6 +170,8 @@ export async function updateRating(id: number, userRating: number) {
 }
 
 export async function updateNotes(id: number, notes: string) {
+  await requireEditAccess()
+
   await prisma.game.update({
     where: { id: id },
     data: { notes: notes },

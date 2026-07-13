@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Toaster } from "@/components/ui/sonner"
 import { Metadata } from "next"
+import { isEditModeEnabled } from "@/lib/auth"
+import { EditModeProvider } from "@/components/edit-mode-context"
+import EditModeToggle from "@/components/edit-mode-toggle"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -23,11 +26,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const canEdit = await isEditModeEnabled()
+
   return (
     <html
       lang="en"
@@ -40,27 +45,31 @@ export default function RootLayout({
       )}
     >
       <body>
-        <header className="flex items-center justify-between p-2 sm:grid sm:grid-cols-3 sm:gap-2">
-          <div className="flex flex-row gap-2">
-            <Gamepad2 className="text-accent-foreground" /> Game Tracker
-          </div>
-          <div className="flex justify-center">
-            <Button variant="link" asChild>
-              <Link href="/">Home</Link>
-            </Button>
-            <Button variant="link" asChild>
-              <Link href="/search">Search</Link>
-            </Button>
-            <Button variant="link" asChild>
-              <Link href="/library">Library</Link>
-            </Button>
-          </div>
-          <div />
-        </header>
-        <ThemeProvider>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <EditModeProvider canEdit={canEdit}>
+          <header className="flex items-center justify-between p-2 sm:grid sm:grid-cols-3 sm:gap-2">
+            <div className="flex flex-row gap-2">
+              <Gamepad2 className="text-accent-foreground" /> Game Tracker
+            </div>
+            <div className="flex justify-center">
+              <Button variant="link" asChild>
+                <Link href="/">Home</Link>
+              </Button>
+              <Button variant="link" asChild>
+                <Link href="/search">Search</Link>
+              </Button>
+              <Button variant="link" asChild>
+                <Link href="/library">Library</Link>
+              </Button>
+            </div>
+            <div className="flex justify-end">
+              <EditModeToggle />
+            </div>
+          </header>
+          <ThemeProvider>
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </EditModeProvider>
       </body>
     </html>
   )

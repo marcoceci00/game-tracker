@@ -44,6 +44,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Platform, Status } from "@/lib/generated/prisma/enums"
 import { ViewTransition } from "react"
+import { useEditMode } from "@/components/edit-mode-context"
 
 const statusColor: Record<Status, string> = {
   WISHLIST: "!bg-purple-500",
@@ -58,6 +59,7 @@ export default function LibraryCard({
   section,
   ...game
 }: LibraryGame & { section?: string }) {
+  const canEdit = useEditMode()
   const [ratingValue, setRatingValue] = useState([Number(game.userRating)])
   const [notesValue, setNotesValue] = useState(game.notes ?? "")
 
@@ -131,6 +133,7 @@ export default function LibraryCard({
         <CardAction>
           <Select
             value={game.status}
+            disabled={!canEdit}
             onValueChange={(status) =>
               handleStatusChange(game.id, status as Status)
             }
@@ -165,6 +168,7 @@ export default function LibraryCard({
         </div>
         <Select
           value={game.platform}
+          disabled={!canEdit}
           onValueChange={(platform) =>
             handlePlatformChange(game.id, platform as Platform)
           }
@@ -196,6 +200,7 @@ export default function LibraryCard({
           min={1}
           max={10}
           step={0.5}
+          disabled={!canEdit}
         />
         <Textarea
           rows={3}
@@ -203,34 +208,37 @@ export default function LibraryCard({
           value={notesValue}
           onChange={(e) => setNotesValue(e.target.value)}
           onBlur={() => updateNotes(game.id, notesValue)}
+          disabled={!canEdit}
         />
       </CardContent>
       <CardFooter>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="destructive">Delete</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Are you sure?</DialogTitle>
-              <DialogDescription>
-                This action cannot be undone. This will permanently delete your
-                game from your library.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button
-                variant="destructive"
-                onClick={() => handleDelete(game.id)}
-              >
-                Continue
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {canEdit && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive">Delete</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your game from your library.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDelete(game.id)}
+                >
+                  Continue
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </CardFooter>
     </Card>
   )

@@ -5,8 +5,10 @@ import { addGameIfNotExists } from "@/app/actions"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { IgdbGame } from "@/lib/types"
+import { useEditMode } from "@/components/edit-mode-context"
 
 export default function InsertButton({ game }: { game: IgdbGame }) {
+  const canEdit = useEditMode()
   const [loading, setLoading] = useState(false)
 
   async function handleClick() {
@@ -28,8 +30,12 @@ export default function InsertButton({ game }: { game: IgdbGame }) {
   }
 
   return (
-    <Button onClick={handleClick} disabled={loading}>
-      {loading ? "Loading..." : "Add to library"}
+    <Button onClick={handleClick} disabled={loading || !canEdit}>
+      {!canEdit
+        ? "Editing is locked"
+        : loading
+          ? "Loading..."
+          : "Add to library"}
     </Button>
   )
 }
