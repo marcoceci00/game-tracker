@@ -1,15 +1,9 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
 import { getGameDetails, readGame } from "@/app/actions"
 import Image from "next/image"
 import InsertButton from "@/components/insert-button"
+import ScreenshotGallery from "@/components/screenshot-gallery"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import { ViewTransition } from "react"
@@ -163,33 +157,10 @@ export default async function GameDetails({
           <h2 className="mb-4 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
             Screenshots
           </h2>
-          <div>
-            <Carousel opts={{ loop: true }}>
-              <CarouselContent>
-                {details.screenshots.map(
-                  (s: { id: number; image_id: string }) => (
-                    <CarouselItem
-                      key={s.id}
-                      className="basis-full sm:basis-1/2 md:basis-1/3"
-                    >
-                      <div className="relative aspect-video">
-                        <Image
-                          src={`https://images.igdb.com/igdb/image/upload/t_1080p/${s.image_id}.jpg`}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                          alt={`${display.name} screenshot`}
-                          className="rounded-lg object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    </CarouselItem>
-                  )
-                )}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          </div>
+          <ScreenshotGallery
+            screenshots={details.screenshots}
+            gameName={display.name}
+          />
         </div>
       )}
     </div>

@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Platform, Status } from "@/lib/generated/prisma/enums"
 import { ViewTransition } from "react"
 import { useEditMode } from "@/components/edit-mode-context"
+import { X } from "lucide-react"
 
 const statusColor: Record<Status, string> = {
   WISHLIST: "!bg-purple-500",
@@ -84,7 +85,10 @@ export default function LibraryCard({
   async function handleRatingChange(id: number, rating: number) {
     try {
       await updateRating(id, rating)
-      toast.success("Rating has been changed")
+      setRatingValue([rating])
+      toast.success(
+        rating === 0 ? "Rating has been reset" : "Rating has been changed"
+      )
     } catch {
       toast.error("Something went wrong")
     }
@@ -191,8 +195,21 @@ export default function LibraryCard({
         >
           {!game.rating ? "N.A." : Math.round(game.rating)}
         </Badge>
-        <span className="text-sm text-muted-foreground">My Rating:</span>
-        <span>{ratingValue[0] === 0 ? "-" : ratingValue[0]}</span>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            My Rating: {ratingValue[0] === 0 ? "-" : ratingValue[0]}
+          </span>
+          {canEdit && ratingValue[0] > 0 && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              title="Reset rating"
+              onClick={() => handleRatingChange(game.id, 0)}
+            >
+              <X />
+            </Button>
+          )}
+        </div>
         <Slider
           value={ratingValue}
           onValueChange={setRatingValue}
