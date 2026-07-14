@@ -127,9 +127,3 @@ export default function LibraryContent({ games }: { games: LibraryGame[] }) {
     </div>
   )
 }
-
-// Implementare filtro per genere nella libreria (`components/library-content.tsx`).
-
-// Stesso pattern del filtro platform, ma i generi sono un array:
-// - lista generi: `[...new Set(games.flatMap(g => g.genres))]`
-// - filtro: `g.genres.includes(genre)`

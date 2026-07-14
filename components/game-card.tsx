@@ -1,4 +1,4 @@
-import { IgdbGame } from "@/lib/types"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardHeader,
@@ -6,10 +6,11 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card"
+import { IgdbGame } from "@/lib/types"
 import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
 import InsertButton from "./insert-button"
+import Link from "next/link"
+import { ratingColor } from "@/lib/utils"
 
 export default function GameCard(game: IgdbGame) {
   return (
@@ -17,11 +18,12 @@ export default function GameCard(game: IgdbGame) {
       <Image
         src={
           game.cover?.image_id
-            ? `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover.image_id}.jpg`
-            : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
+            ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.image_id}.jpg`
+            : "/no-cover.png"
         }
         width={1080}
         height={1920}
+        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
         alt={`${game.name} image`}
         loading="lazy"
       />
@@ -42,9 +44,7 @@ export default function GameCard(game: IgdbGame) {
             </div>
           )}
         </div>
-        <Badge
-          className={`${!game.aggregated_rating ? "bg-accent" : Math.round(game.aggregated_rating) < 60 ? "bg-red-500" : Math.round(game.aggregated_rating) < 90 ? "bg-blue-500" : "bg-green-500"} mt-auto p-4`}
-        >
+        <Badge className={`${ratingColor(game.aggregated_rating)} mt-auto p-4`}>
           {!game.aggregated_rating
             ? "N.A."
             : Math.round(game.aggregated_rating)}

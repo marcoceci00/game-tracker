@@ -2,6 +2,9 @@ import { cookies } from "next/headers"
 import { createHash, timingSafeEqual } from "crypto"
 
 export const EDIT_COOKIE_NAME = "edit-token"
+export const ATTEMPTS_COOKIE_NAME = "edit-attempts"
+export const MAX_ATTEMPTS = 5
+export const ATTEMPTS_WINDOW_MS = 5 * 60 * 1000
 
 export function editTokenFor(password: string) {
   return createHash("sha256").update(password).digest("hex")
@@ -30,4 +33,46 @@ export async function requireEditAccess() {
 export function verifyEditPassword(password: string) {
   const expected = process.env.EDIT_PASSWORD
   return !!expected && safeEqual(password, expected)
+}
+
+export async function tooManyAttempts() {
+  const raw = (await cookies()).get(ATTEMPTS_COOKIE_NAME)?.value
+  if (!raw) return false
+
+  const { count, firstAt } = JSON.parse(raw) as {
+    count: number
+    firstAt: number
+  }
+
+  const windowExpired = Date.now() - firstAt > ATTEMPTS_WINDOW_MS
+
+  if (windowExpired) return false
+
+  return count >= MAX_ATTEMPTS
+}
+
+export async function recordFailedAttempt() {
+  const raw = (await cookies()).get(ATTEMPTS_COOKIE_NAME)?.value
+  const previous = raw
+    ? (JSON.parse(raw) as { count: number; firstAt: number })
+    : null
+
+  const windowExpired =
+    !previous || Date.now() - previous.firstAt > ATTEMPTS_WINDOW_MS
+
+  const next = windowExpired
+    ? { count: 1, firstAt: Date.now() }
+    : { count: previous.count + 1, firstAt: previous.firstAt }
+
+  ;(await cookies()).set(ATTEMPTS_COOKIE_NAME, JSON.stringify(next), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: ATTEMPTS_WINDOW_MS / 1000,
+  })
+}
+
+export async function clearAttempts() {
+  ;(await cookies()).delete(ATTEMPTS_COOKIE_NAME)
 }

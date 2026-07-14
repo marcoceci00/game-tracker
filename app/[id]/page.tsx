@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button"
 import { getGameDetails, readGame } from "@/app/actions"
 import Image from "next/image"
 import InsertButton from "@/components/insert-button"
-import ScreenshotGallery from "@/components/screenshot-gallery"
-import { notFound } from "next/navigation"
 import { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { ratingColor } from "@/lib/utils"
+import ScreenshotGallery from "@/components/screenshot-gallery"
 import { ViewTransition } from "react"
 
 export async function generateMetadata({
@@ -61,7 +62,7 @@ export default async function GameDetails({
             src={
               display.cover
                 ? `https://images.igdb.com/igdb/image/upload/t_1080p/${display.cover}.jpg`
-                : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
+                : "/no-cover.png"
             }
             width={1080}
             height={1920}
@@ -91,15 +92,7 @@ export default async function GameDetails({
           </div>
           <div className="flex items-center gap-3">
             <span
-              className={`rounded-md px-3 py-1 text-sm font-semibold text-white ${
-                !display.rating
-                  ? "bg-accent"
-                  : display.rating < 60
-                    ? "bg-red-500"
-                    : display.rating < 90
-                      ? "bg-blue-500"
-                      : "bg-green-500"
-              }`}
+              className={`rounded-md px-3 py-1 text-sm font-semibold text-white ${ratingColor(display.rating)}`}
             >
               {!display.rating ? "N.A." : display.rating}
             </span>

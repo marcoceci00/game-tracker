@@ -1,36 +1,22 @@
 "use client"
 
-import type { LibraryGame } from "@/lib/types"
-import { useState } from "react"
-import { toast } from "sonner"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardAction,
   CardContent,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card"
-import Image from "next/image"
 import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-} from "@/components/ui/select"
-import {
-  updateStatus,
-  updatePlatform,
-  updateRating,
   deleteGame,
   updateNotes,
+  updatePlatform,
+  updateRating,
+  updateStatus,
 } from "@/app/actions"
-import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import {
   Dialog,
   DialogClose,
@@ -41,10 +27,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
+import Image from "next/image"
+import type { LibraryGame } from "@/lib/types"
+import Link from "next/link"
 import { Platform, Status } from "@/lib/generated/prisma/enums"
-import { ViewTransition } from "react"
+import { ratingColor } from "@/lib/utils"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
 import { useEditMode } from "@/components/edit-mode-context"
+import { useState } from "react"
+import { ViewTransition } from "react"
 import { X } from "lucide-react"
 
 const statusColor: Record<Status, string> = {
@@ -63,10 +64,13 @@ export default function LibraryCard({
   const canEdit = useEditMode()
   const [ratingValue, setRatingValue] = useState([Number(game.userRating)])
   const [notesValue, setNotesValue] = useState(game.notes ?? "")
+  const [statusValue, setStatusValue] = useState(game.status)
+  const [platformValue, setPlatformValue] = useState(game.platform)
 
   async function handleStatusChange(id: number, status: Status) {
     try {
       await updateStatus(id, status)
+      setStatusValue(status)
       toast.success("Status has been changed")
     } catch {
       toast.error("Something went wrong")
@@ -76,6 +80,7 @@ export default function LibraryCard({
   async function handlePlatformChange(id: number, platform: Platform) {
     try {
       await updatePlatform(id, platform)
+      setPlatformValue(platform)
       toast.success("Platform has been changed")
     } catch {
       toast.error("Something went wrong")
@@ -89,6 +94,14 @@ export default function LibraryCard({
       toast.success(
         rating === 0 ? "Rating has been reset" : "Rating has been changed"
       )
+    } catch {
+      toast.error("Something went wrong")
+    }
+  }
+
+  async function handleNotesBlur(id: number, notes: string) {
+    try {
+      await updateNotes(id, notes)
     } catch {
       toast.error("Something went wrong")
     }
@@ -115,11 +128,12 @@ export default function LibraryCard({
           <Image
             src={
               game.cover
-                ? `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover}.jpg`
-                : "https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg"
+                ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.jpg`
+                : "/no-cover.png"
             }
             width={1080}
             height={1920}
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
             alt={`${game.name} image`}
             loading="lazy"
           />
@@ -136,13 +150,13 @@ export default function LibraryCard({
         </p>
         <CardAction>
           <Select
-            value={game.status}
+            value={statusValue}
             disabled={!canEdit}
             onValueChange={(status) =>
               handleStatusChange(game.id, status as Status)
             }
           >
-            <SelectTrigger className={statusColor[game.status]}>
+            <SelectTrigger className={statusColor[statusValue]}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +185,7 @@ export default function LibraryCard({
           )}
         </div>
         <Select
-          value={game.platform}
+          value={platformValue}
           disabled={!canEdit}
           onValueChange={(platform) =>
             handlePlatformChange(game.id, platform as Platform)
@@ -190,9 +204,7 @@ export default function LibraryCard({
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Badge
-          className={`${!game.rating ? "bg-accent" : Math.round(game.rating) < 60 ? "bg-red-500" : Math.round(game.rating) < 90 ? "bg-blue-500" : "bg-green-500"} mt-auto p-4`}
-        >
+        <Badge className={`${ratingColor(game.rating)} mt-auto p-4`}>
           {!game.rating ? "N.A." : Math.round(game.rating)}
         </Badge>
         <div className="flex items-center justify-between">
@@ -224,7 +236,7 @@ export default function LibraryCard({
           placeholder="Personal notes..."
           value={notesValue}
           onChange={(e) => setNotesValue(e.target.value)}
-          onBlur={() => updateNotes(game.id, notesValue)}
+          onBlur={() => handleNotesBlur(game.id, notesValue)}
           disabled={!canEdit}
         />
       </CardContent>

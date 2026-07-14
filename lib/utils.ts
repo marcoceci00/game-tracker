@@ -4,3 +4,15 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function ratingColor(rating: number | null | undefined) {
+  if (rating == null) return "bg-accent"
+
+  const ratingRounded = Math.round(rating)
+
+  return ratingRounded < 60
+    ? "bg-red-500"
+    : ratingRounded < 90
+      ? "bg-blue-500"
+      : "bg-green-500"
+}
