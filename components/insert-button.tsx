@@ -1,20 +1,18 @@
 "use client"
 
-import { useState } from "react"
 import { addGameIfNotExists } from "@/app/actions"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { IgdbGame } from "@/lib/types"
 import { useEditMode } from "@/components/edit-mode-context"
+import { useAction } from "@/hooks/use-action"
 
 export default function InsertButton({ game }: { game: IgdbGame }) {
   const canEdit = useEditMode()
-  const [loading, setLoading] = useState(false)
+  const { run, pending } = useAction()
 
-  async function handleClick() {
-    setLoading(true)
-
-    try {
+  function handleClick() {
+    run(async () => {
       const result = await addGameIfNotExists(game)
 
       if (result) {
@@ -22,18 +20,14 @@ export default function InsertButton({ game }: { game: IgdbGame }) {
       } else {
         toast.error("Game is already in library")
       }
-    } catch {
-      toast.error("Something went wrong")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
-    <Button onClick={handleClick} disabled={loading || !canEdit}>
+    <Button onClick={handleClick} disabled={pending || !canEdit}>
       {!canEdit
         ? "Editing is locked"
-        : loading
+        : pending
           ? "Loading..."
           : "Add to library"}
     </Button>

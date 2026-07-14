@@ -5,7 +5,7 @@ import Image from "next/image"
 import InsertButton from "@/components/insert-button"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { ratingColor } from "@/lib/utils"
+import { igdbImageUrl, ratingColor } from "@/lib/utils"
 import ScreenshotGallery from "@/components/screenshot-gallery"
 import { ViewTransition } from "react"
 
@@ -22,10 +22,13 @@ export async function generateMetadata({
 
 export default async function GameDetails({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ from?: string }>
 }) {
   const { id } = await params
+  const { from } = await searchParams
   const [game, gameDetails] = await Promise.all([
     readGame(Number(id)),
     getGameDetails(Number(id)),
@@ -56,18 +59,18 @@ export default async function GameDetails({
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[300px_1fr]">
-        <ViewTransition name={`cover-${id}`}>
+        <ViewTransition name={`cover-${from ? from + "-" : ""}${id}`}>
           <Image
             className="h-auto w-full rounded-lg"
             src={
               display.cover
-                ? `https://images.igdb.com/igdb/image/upload/t_1080p/${display.cover}.jpg`
+                ? igdbImageUrl(display.cover, "t_1080p")
                 : "/no-cover.png"
             }
             width={1080}
             height={1920}
             alt={`${display.name} image`}
-            loading="eager"
+            priority
           />
         </ViewTransition>
         <div className="flex flex-col gap-6">

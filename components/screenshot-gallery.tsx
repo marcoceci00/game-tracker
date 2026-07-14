@@ -17,12 +17,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { igdbImageUrl } from "@/lib/utils"
 
 type Screenshot = { id: number; image_id: string }
-
-function screenshotUrl(imageId: string) {
-  return `https://images.igdb.com/igdb/image/upload/t_1080p/${imageId}.jpg`
-}
 
 export default function ScreenshotGallery({
   screenshots,
@@ -71,7 +68,7 @@ export default function ScreenshotGallery({
                 className="relative block aspect-video w-full cursor-zoom-in overflow-hidden rounded-lg"
               >
                 <Image
-                  src={screenshotUrl(s.image_id)}
+                  src={igdbImageUrl(s.image_id, "t_1080p")}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                   alt={`${gameName} screenshot`}
@@ -98,7 +95,7 @@ export default function ScreenshotGallery({
           {current && (
             <div className="relative aspect-video w-full overflow-hidden rounded-lg">
               <Image
-                src={screenshotUrl(current.image_id)}
+                src={igdbImageUrl(current.image_id, "t_1080p")}
                 fill
                 sizes="(max-width: 768px) 100vw, 768px"
                 alt={`${gameName} screenshot`}

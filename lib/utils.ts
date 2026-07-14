@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function igdbImageUrl(imageId: string, size: "t_cover_big" | "t_1080p") {
+  return `https://images.igdb.com/igdb/image/upload/${size}/${imageId}.jpg`
+}
+
 export function ratingColor(rating: number | null | undefined) {
   if (rating == null) return "bg-accent"
 

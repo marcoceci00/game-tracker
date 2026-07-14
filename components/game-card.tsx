@@ -10,7 +10,7 @@ import { IgdbGame } from "@/lib/types"
 import Image from "next/image"
 import InsertButton from "./insert-button"
 import Link from "next/link"
-import { ratingColor } from "@/lib/utils"
+import { igdbImageUrl, ratingColor } from "@/lib/utils"
 
 export default function GameCard(game: IgdbGame) {
   return (
@@ -18,7 +18,7 @@ export default function GameCard(game: IgdbGame) {
       <Image
         src={
           game.cover?.image_id
-            ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.image_id}.jpg`
+            ? igdbImageUrl(game.cover.image_id, "t_cover_big")
             : "/no-cover.png"
         }
         width={1080}
@@ -29,7 +29,15 @@ export default function GameCard(game: IgdbGame) {
       />
       <CardHeader>
         <Link href={`/${game.id}`}>
-          <CardTitle>{`${game.name} (${game.first_release_date ? new Date(game.first_release_date * 1000).toLocaleDateString("en-EN", { year: "numeric" }) : "N.A."})`}</CardTitle>
+          <CardTitle>{game.name}</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {game.first_release_date
+              ? new Date(game.first_release_date * 1000).toLocaleDateString(
+                  "en",
+                  { year: "numeric" }
+                )
+              : "N.A."}
+          </p>
         </Link>
       </CardHeader>
       <CardContent className="flex grow flex-col gap-2">

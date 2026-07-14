@@ -1,8 +1,7 @@
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { createHmac, randomBytes, timingSafeEqual } from "crypto"
 
 export const EDIT_COOKIE_NAME = "edit-token"
-export const ATTEMPTS_COOKIE_NAME = "edit-attempts"
 export const MAX_ATTEMPTS = 5
 export const ATTEMPTS_WINDOW_MS = 5 * 60 * 1000
 export const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
@@ -49,46 +48,46 @@ export function verifyEditPassword(password: string) {
   return !!expected && safeEqual(password, expected)
 }
 
+// ponytail: Map in memoria, per-processo. Va bene per una sola istanza;
+// se l'app girasse su piu' istanze servirebbe uno store condiviso (es. Redis).
+const attemptsByIp = new Map<string, { count: number; firstAt: number }>()
+
+async function getClientIp() {
+  const h = await headers()
+  return (
+    h.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    h.get("x-real-ip") ??
+    "unknown"
+  )
+}
+
 export async function tooManyAttempts() {
-  const raw = (await cookies()).get(ATTEMPTS_COOKIE_NAME)?.value
-  if (!raw) return false
+  const entry = attemptsByIp.get(await getClientIp())
+  if (!entry) return false
 
-  const { count, firstAt } = JSON.parse(raw) as {
-    count: number
-    firstAt: number
-  }
-
-  const windowExpired = Date.now() - firstAt > ATTEMPTS_WINDOW_MS
-
+  const windowExpired = Date.now() - entry.firstAt > ATTEMPTS_WINDOW_MS
   if (windowExpired) return false
 
-  return count >= MAX_ATTEMPTS
+  return entry.count >= MAX_ATTEMPTS
 }
 
 export async function recordFailedAttempt() {
-  const raw = (await cookies()).get(ATTEMPTS_COOKIE_NAME)?.value
-  const previous = raw
-    ? (JSON.parse(raw) as { count: number; firstAt: number })
-    : null
+  const ip = await getClientIp()
+  const previous = attemptsByIp.get(ip)
 
   const windowExpired =
     !previous || Date.now() - previous.firstAt > ATTEMPTS_WINDOW_MS
 
-  const next = windowExpired
-    ? { count: 1, firstAt: Date.now() }
-    : { count: previous.count + 1, firstAt: previous.firstAt }
-
-  ;(await cookies()).set(ATTEMPTS_COOKIE_NAME, JSON.stringify(next), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: ATTEMPTS_WINDOW_MS / 1000,
-  })
+  attemptsByIp.set(
+    ip,
+    windowExpired
+      ? { count: 1, firstAt: Date.now() }
+      : { count: previous.count + 1, firstAt: previous.firstAt }
+  )
 }
 
 export async function clearAttempts() {
-  ;(await cookies()).delete(ATTEMPTS_COOKIE_NAME)
+  attemptsByIp.delete(await getClientIp())
 }
 
 function sign(value: string) {

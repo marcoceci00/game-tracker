@@ -1,6 +1,7 @@
 import LibraryContent from "@/components/library-content"
 import prisma from "@/lib/prisma"
 import { Metadata } from "next"
+import { Suspense } from "react"
 
 export const metadata: Metadata = {
   title: "Library",
@@ -16,7 +17,9 @@ export default async function Library() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <h1 className="mb-4 text-2xl font-semibold">Library</h1>
-      <LibraryContent games={games} />
+      <Suspense>
+        <LibraryContent games={games} />
+      </Suspense>
     </div>
   )
 }

@@ -31,7 +31,8 @@ import Image from "next/image"
 import type { LibraryGame } from "@/lib/types"
 import Link from "next/link"
 import { Platform, Status } from "@/lib/generated/prisma/enums"
-import { ratingColor } from "@/lib/utils"
+import { igdbImageUrl, ratingColor } from "@/lib/utils"
+import { PLATFORM_LABELS, STATUS_COLORS, STATUS_LABELS } from "@/lib/status"
 import {
   Select,
   SelectContent,
@@ -47,79 +48,67 @@ import { useEditMode } from "@/components/edit-mode-context"
 import { useState } from "react"
 import { ViewTransition } from "react"
 import { X } from "lucide-react"
-
-const statusColor: Record<Status, string> = {
-  WISHLIST: "!bg-purple-500",
-  BACKLOG: "!bg-slate-500",
-  PLAYING: "!bg-yellow-500",
-  SHELVED: "!bg-orange-500",
-  COMPLETED: "!bg-green-500",
-  DROPPED: "!bg-red-500",
-}
+import { useAction } from "@/hooks/use-action"
 
 export default function LibraryCard({
   section,
   ...game
 }: LibraryGame & { section?: string }) {
   const canEdit = useEditMode()
+  const { run } = useAction()
   const [ratingValue, setRatingValue] = useState([Number(game.userRating)])
   const [notesValue, setNotesValue] = useState(game.notes ?? "")
   const [statusValue, setStatusValue] = useState(game.status)
   const [platformValue, setPlatformValue] = useState(game.platform)
 
-  async function handleStatusChange(id: number, status: Status) {
-    try {
+  function handleStatusChange(id: number, status: Status) {
+    run(async () => {
       await updateStatus(id, status)
       setStatusValue(status)
       toast.success("Status has been changed")
-    } catch {
-      toast.error("Something went wrong")
-    }
+    })
   }
 
-  async function handlePlatformChange(id: number, platform: Platform) {
-    try {
+  function handlePlatformChange(id: number, platform: Platform) {
+    run(async () => {
       await updatePlatform(id, platform)
       setPlatformValue(platform)
       toast.success("Platform has been changed")
-    } catch {
-      toast.error("Something went wrong")
-    }
+    })
   }
 
-  async function handleRatingChange(id: number, rating: number) {
-    try {
+  function handleRatingChange(id: number, rating: number) {
+    run(async () => {
       await updateRating(id, rating)
       setRatingValue([rating])
       toast.success(
         rating === 0 ? "Rating has been reset" : "Rating has been changed"
       )
-    } catch {
-      toast.error("Something went wrong")
-    }
+    })
   }
 
-  async function handleNotesBlur(id: number, notes: string) {
-    try {
-      await updateNotes(id, notes)
-    } catch {
-      toast.error("Something went wrong")
-    }
+  function handleNotesBlur(id: number, notes: string) {
+    run(async () => {
+      try {
+        await updateNotes(id, notes)
+      } catch (error) {
+        setNotesValue(game.notes ?? "")
+        throw error
+      }
+    })
   }
 
-  async function handleDelete(id: number) {
-    try {
+  function handleDelete(id: number) {
+    run(async () => {
       await deleteGame(id)
       toast.success("Game has been deleted")
-    } catch {
-      toast.error("Something went wrong")
-    }
+    })
   }
 
   return (
     <Card className="h-full pt-0">
       <Link
-        href={`/${game.id}`}
+        href={section ? `/${game.id}?from=${section}` : `/${game.id}`}
         className="block rounded-t-xl transition-opacity hover:opacity-90"
       >
         <ViewTransition
@@ -127,9 +116,7 @@ export default function LibraryCard({
         >
           <Image
             src={
-              game.cover
-                ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.jpg`
-                : "/no-cover.png"
+              game.cover ? igdbImageUrl(game.cover, "t_cover_big") : "/no-cover.png"
             }
             width={1080}
             height={1920}
@@ -156,17 +143,16 @@ export default function LibraryCard({
               handleStatusChange(game.id, status as Status)
             }
           >
-            <SelectTrigger className={statusColor[statusValue]}>
+            <SelectTrigger className={STATUS_COLORS[statusValue]}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="WISHLIST">Wishlist</SelectItem>
-                <SelectItem value="BACKLOG">Backlog</SelectItem>
-                <SelectItem value="PLAYING">Playing</SelectItem>
-                <SelectItem value="SHELVED">Shelved</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="DROPPED">Dropped</SelectItem>
+                {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -196,11 +182,11 @@ export default function LibraryCard({
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="PC">PC</SelectItem>
-              <SelectItem value="PLAYSTATION_5">Playstation 5</SelectItem>
-              <SelectItem value="NINTENDO_SWITCH_2">
-                Nintendo Switch 2
-              </SelectItem>
+              {Object.entries(PLATFORM_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>

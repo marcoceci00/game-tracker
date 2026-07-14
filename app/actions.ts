@@ -1,5 +1,6 @@
 "use server"
 
+import * as z from "zod"
 import { cache } from "react"
 import {
   clearAttempts,
@@ -16,6 +17,13 @@ import { IgdbGame } from "@/lib/types"
 import prisma from "@/lib/prisma"
 import { revalidatePath, unstable_cache } from "next/cache"
 import { Platform, Status } from "@/lib/generated/prisma/enums"
+
+const statusSchema = z.enum(Object.values(Status) as [Status, ...Status[]])
+const platformSchema = z.enum(
+  Object.values(Platform) as [Platform, ...Platform[]]
+)
+const ratingSchema = z.number().min(0).max(10)
+const notesSchema = z.string().max(2000)
 
 export async function unlockEditing(password: string) {
   if (await tooManyAttempts()) return false
@@ -143,13 +151,14 @@ export async function addGameIfNotExists(game: IgdbGame) {
 
 export async function updateStatus(id: number, status: Status) {
   await requireEditAccess()
+  const validStatus = statusSchema.parse(status)
 
   await prisma.game.update({
     where: {
       id: id,
     },
     data: {
-      status: status,
+      status: validStatus,
     },
   })
   revalidatePath("/", "layout")
@@ -157,13 +166,14 @@ export async function updateStatus(id: number, status: Status) {
 
 export async function updatePlatform(id: number, platform: Platform) {
   await requireEditAccess()
+  const validPlatform = platformSchema.parse(platform)
 
   await prisma.game.update({
     where: {
       id: id,
     },
     data: {
-      platform: platform,
+      platform: validPlatform,
     },
   })
   revalidatePath("/", "layout")
@@ -171,13 +181,14 @@ export async function updatePlatform(id: number, platform: Platform) {
 
 export async function updateRating(id: number, userRating: number) {
   await requireEditAccess()
+  const validRating = ratingSchema.parse(userRating)
 
   await prisma.game.update({
     where: {
       id: id,
     },
     data: {
-      userRating: userRating,
+      userRating: validRating,
     },
   })
   revalidatePath("/", "layout")
@@ -185,10 +196,11 @@ export async function updateRating(id: number, userRating: number) {
 
 export async function updateNotes(id: number, notes: string) {
   await requireEditAccess()
+  const validNotes = notesSchema.parse(notes)
 
   await prisma.game.update({
     where: { id: id },
-    data: { notes: notes },
+    data: { notes: validNotes },
   })
   revalidatePath("/", "layout")
 }
