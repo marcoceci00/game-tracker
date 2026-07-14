@@ -40,11 +40,10 @@ DATABASE_URL="postgresql://..."
 
 IGDB_CLIENT_ID="..."
 IGDB_API_KEY="..."
-IGDB_TOKEN="..."
 ```
 
 - `DATABASE_URL` — connection string PostgreSQL
-- `IGDB_CLIENT_ID` / `IGDB_API_KEY` / `IGDB_TOKEN` — credenziali API IGDB per la ricerca giochi
+- `IGDB_CLIENT_ID` / `IGDB_API_KEY` — credenziali API IGDB per la ricerca giochi
 
 ### 3. Inizializza il database
 
@@ -62,14 +61,14 @@ Apri [http://localhost:3000](http://localhost:3000).
 
 ## Comandi disponibili
 
-| Comando              | Descrizione                              |
-| -------------------- | ---------------------------------------- |
-| `npm run dev`        | Avvia il server di sviluppo              |
-| `npm run build`      | Crea la build di produzione              |
-| `npm run start`      | Avvia la build di produzione             |
-| `npm run lint`       | Controlla il codice con ESLint           |
-| `npm run format`     | Formatta il codice con Prettier          |
-| `npm run typecheck`  | Controlla i tipi TypeScript              |
+| Comando             | Descrizione                     |
+| ------------------- | ------------------------------- |
+| `npm run dev`       | Avvia il server di sviluppo     |
+| `npm run build`     | Crea la build di produzione     |
+| `npm run start`     | Avvia la build di produzione    |
+| `npm run lint`      | Controlla il codice con ESLint  |
+| `npm run format`    | Formatta il codice con Prettier |
+| `npm run typecheck` | Controlla i tipi TypeScript     |
 
 ## Database
 

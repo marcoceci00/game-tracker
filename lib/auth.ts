@@ -1,13 +1,17 @@
 import { cookies } from "next/headers"
-import { createHash, timingSafeEqual } from "crypto"
+import { createHmac, randomBytes, timingSafeEqual } from "crypto"
 
 export const EDIT_COOKIE_NAME = "edit-token"
 export const ATTEMPTS_COOKIE_NAME = "edit-attempts"
 export const MAX_ATTEMPTS = 5
 export const ATTEMPTS_WINDOW_MS = 5 * 60 * 1000
+export const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
-export function editTokenFor(password: string) {
-  return createHash("sha256").update(password).digest("hex")
+export function createSessionToken() {
+  const expiresAt = Date.now() + SESSION_MAX_AGE_MS
+  const nonce = randomBytes(16).toString("hex")
+  const payload = `${expiresAt}.${nonce}`
+  return `${payload}.${sign(payload)}`
 }
 
 function safeEqual(a: string, b: string) {
@@ -21,7 +25,17 @@ export async function isEditModeEnabled() {
   if (!password) return false
 
   const token = (await cookies()).get(EDIT_COOKIE_NAME)?.value
-  return !!token && safeEqual(token, editTokenFor(password))
+  if (!token) return false
+
+  const [expiresAt, nonce, signature] = token.split(".")
+  if (!expiresAt || !nonce || !signature) return false
+
+  const notExpired = Number(expiresAt) > Date.now()
+
+  const expectedSignature = sign(`${expiresAt}.${nonce}`)
+  const signatureValid = safeEqual(signature, expectedSignature)
+
+  return notExpired && signatureValid
 }
 
 export async function requireEditAccess() {
@@ -75,4 +89,9 @@ export async function recordFailedAttempt() {
 
 export async function clearAttempts() {
   ;(await cookies()).delete(ATTEMPTS_COOKIE_NAME)
+}
+
+function sign(value: string) {
+  const secret = process.env.EDIT_PASSWORD ?? ""
+  return createHmac("sha256", secret).update(value).digest("hex")
 }

@@ -21,3 +21,17 @@ UX
 
 12. loading="eager" sugli screenshot
     [id]/page.tsx:178](app/[id]/page.tsx#L178) — gli screenshot sono sotto la fold nel carousel, dovrebbero essere lazy.
+
+Idee future (non urgenti, valutare quando servono davvero)
+
+13. Aggiungere giochi non presenti su IGDB (es. Lumentale)
+    Richiede prima di separare l'id proprio della riga (autoincrement) dall'id IGDB (colonna igdbId dedicata) — oggi coincidono e i giochi non-IGDB non avrebbero un igdbId. Da progettare come feature a sé, non solo come migrazione di schema.
+
+14. Normalizzare i generi in una tabella dedicata
+    Solo se la libreria cresce molto o serve un filtro per genere più sofisticato di un array di stringhe.
+
+15. Paginazione libreria e ricerca
+    Solo quando gli elementi diventano centinaia — a oggi non è un problema reale.
+
+16. react-hooks/set-state-in-effect in components/ui/carousel.tsx:98
+    File generato da shadcn/ui, non toccato finora. Chiama setState sincrono dentro un useEffect — lint lo segnala ma il componente funziona. Da sistemare quando si tocca di nuovo quel file.

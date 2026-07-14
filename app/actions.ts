@@ -3,10 +3,11 @@
 import { cache } from "react"
 import {
   clearAttempts,
+  createSessionToken,
   EDIT_COOKIE_NAME,
-  editTokenFor,
   recordFailedAttempt,
   requireEditAccess,
+  SESSION_MAX_AGE_MS,
   tooManyAttempts,
   verifyEditPassword,
 } from "@/lib/auth"
@@ -22,12 +23,12 @@ export async function unlockEditing(password: string) {
 
   if (ok) {
     await clearAttempts()
-    ;(await cookies()).set(EDIT_COOKIE_NAME, editTokenFor(password), {
+    ;(await cookies()).set(EDIT_COOKIE_NAME, createSessionToken(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: SESSION_MAX_AGE_MS / 1000,
     })
   } else {
     await recordFailedAttempt()
@@ -46,7 +47,7 @@ export const readGame = cache(async (id: number) => {
 
 export const getGameDetails = unstable_cache(
   async (id: number) => {
-    if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_TOKEN) {
+    if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_API_KEY) {
       throw new Error("Missing IGDB credentials")
     }
 
@@ -54,7 +55,7 @@ export const getGameDetails = unstable_cache(
       method: "POST",
       headers: {
         "Client-ID": process.env.IGDB_CLIENT_ID,
-        Authorization: `Bearer ${process.env.IGDB_TOKEN}`,
+        Authorization: `Bearer ${await getIgdbAccessToken()}`,
       },
       body: `
         fields name,cover.image_id,genres.name,aggregated_rating,first_release_date,total_rating,summary,screenshots.image_id,platforms.name,involved_companies.company.name;
@@ -99,7 +100,7 @@ export async function deleteGame(id: number) {
 }
 
 export async function searchGame(data: { name: string }) {
-  if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_TOKEN) {
+  if (!process.env.IGDB_CLIENT_ID || !process.env.IGDB_API_KEY) {
     throw new Error("Missing IGDB credentials")
   }
 
@@ -109,7 +110,7 @@ export async function searchGame(data: { name: string }) {
     method: "POST",
     headers: {
       "Client-ID": process.env.IGDB_CLIENT_ID,
-      Authorization: `Bearer ${process.env.IGDB_TOKEN}`,
+      Authorization: `Bearer ${await getIgdbAccessToken()}`,
     },
     body: `
         search "${safeName}";
@@ -191,3 +192,19 @@ export async function updateNotes(id: number, notes: string) {
   })
   revalidatePath("/", "layout")
 }
+
+const getIgdbAccessToken = unstable_cache(
+  async () => {
+    const response = await fetch(
+      `https://id.twitch.tv/oauth2/token?client_id=${process.env.IGDB_CLIENT_ID}&client_secret=${process.env.IGDB_API_KEY}&grant_type=client_credentials`,
+      { method: "POST" }
+    )
+
+    if (!response.ok) throw new Error(`Twitch token error: ${response.status}`)
+
+    const data = await response.json()
+    return data.access_token as string
+  },
+  ["igdb-access-token"],
+  { revalidate: 60 * 60 * 24 * 30 } // 30 giorni
+)
