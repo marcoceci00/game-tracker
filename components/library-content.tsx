@@ -1,7 +1,7 @@
 "use client"
 
 import { LibraryGame } from "@/lib/types"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import LibraryCard from "@/components/library-card"
 import { Platform, Status } from "@/lib/generated/prisma/enums"
@@ -39,25 +39,10 @@ const SORT_FN = {
 type SortKey = keyof typeof SORT_FN
 
 export default function LibraryContent({ games }: { games: LibraryGame[] }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  const status = (searchParams.get("status") as Status | null) ?? "ALL"
-  const platform = (searchParams.get("platform") as Platform | null) ?? "ALL"
-  const query = searchParams.get("q") ?? ""
-  const sortParam = searchParams.get("sort")
-  const sort: SortKey =
-    sortParam && sortParam in SORT_FN ? (sortParam as SortKey) : "createdAt_desc"
-
-  function updateParam(key: string, value: string) {
-    const params = new URLSearchParams(searchParams)
-    if (!value || value === "ALL") {
-      params.delete(key)
-    } else {
-      params.set(key, value)
-    }
-    router.replace(`?${params.toString()}`, { scroll: false })
-  }
+  const [status, setStatus] = useState<Status | "ALL">("ALL")
+  const [platform, setPlatform] = useState<Platform | "ALL">("ALL")
+  const [query, setQuery] = useState("")
+  const [sort, setSort] = useState<SortKey>("createdAt_desc")
 
   const filtered = games
     .filter((g) => status === "ALL" || g.status === status)
@@ -75,7 +60,7 @@ export default function LibraryContent({ games }: { games: LibraryGame[] }) {
           <Button
             key={s}
             variant={s === status ? "default" : "outline"}
-            onClick={() => updateParam("status", s)}
+            onClick={() => setStatus(s)}
           >
             {STATUS_LABELS_ALL[s]}
           </Button>
@@ -87,7 +72,7 @@ export default function LibraryContent({ games }: { games: LibraryGame[] }) {
         </span>
         <Select
           value={platform}
-          onValueChange={(p) => updateParam("platform", p)}
+          onValueChange={(p) => setPlatform(p as Platform | "ALL")}
         >
           <SelectTrigger className="w-44">
             <SelectValue />
@@ -105,7 +90,7 @@ export default function LibraryContent({ games }: { games: LibraryGame[] }) {
       </div>
       <div className="flex items-center gap-2">
         <span className="self-center text-sm text-muted-foreground">Sort:</span>
-        <Select value={sort} onValueChange={(s) => updateParam("sort", s)}>
+        <Select value={sort} onValueChange={(s) => setSort(s as SortKey)}>
           <SelectTrigger className="w-44">
             <SelectValue />
           </SelectTrigger>
@@ -121,7 +106,7 @@ export default function LibraryContent({ games }: { games: LibraryGame[] }) {
       </div>
       <Input
         value={query}
-        onChange={(e) => updateParam("q", e.target.value)}
+        onChange={(e) => setQuery(e.target.value)}
         placeholder="Search your library..."
       />
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

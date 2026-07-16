@@ -79,13 +79,15 @@ export const getGameDetails = unstable_cache(
   { revalidate: 3600 }
 )
 
-export async function createGame(game: IgdbGame) {
+export async function createGame(game: IgdbGame, platform: Platform) {
   await requireEditAccess()
+  const validPlatform = platformSchema.parse(platform)
 
   await prisma.game.create({
     data: {
       id: game.id,
       name: game.name,
+      platform: validPlatform,
       cover: game.cover?.image_id ?? null,
       genres: game.genres?.map((genre) => genre.name),
       rating: game.aggregated_rating
@@ -138,11 +140,11 @@ export async function searchGame(data: { name: string }) {
   return sortedResult
 }
 
-export async function addGameIfNotExists(game: IgdbGame) {
+export async function addGameIfNotExists(game: IgdbGame, platform: Platform) {
   const exists = await readGame(game.id)
 
   if (!exists) {
-    await createGame(game)
+    await createGame(game, platform)
     return true
   }
 
